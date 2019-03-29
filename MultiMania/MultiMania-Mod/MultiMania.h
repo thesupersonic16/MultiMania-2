@@ -8,8 +8,8 @@ static HMODULE MultiManiaCS;
 #define LoadMultiManiaFunc(name) name = (decltype(name))GetProcAddress(MultiManiaCS, #name);
 
 MultiManiaFunc(InitMultiMania, ());
-MultiManiaFunc(MultiMania_Connect, (const char* connectionCode));
-MultiManiaFunc(MultiMania_Host, ());
+MultiManiaFunc(MultiMania_Connect, (const char* connectionCode, int PPS));
+MultiManiaFunc(MultiMania_Host, (int PPS));
 
 static void LoadExports()
 {

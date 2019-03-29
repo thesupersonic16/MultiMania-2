@@ -7,8 +7,15 @@
 #include "MultiMania.h"
 #include "MultiManiaMenu.h"
 #include <SonicMania.h>
+#include <windows.h>
 
 using namespace SonicMania;
+
+using std::string;
+
+int MultiMania_Code[6];
+int MultiMania_CodePosition;
+int MultiMania_PPS;
 
 DataPointer(BYTE, Controller_A, 0x0044170C);
 DataPointer(BYTE, Key_Enter, 0x00441754);
@@ -31,7 +38,7 @@ char MultiManiaMenu()
     YPosition += 6;
     DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, 1, 0xF0F0F0);
     YPosition += 14;
-    DevMenu_DrawText(centerX, (std::string("MultiMania v") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
     YPosition += 14;
     //DevMenu_DrawText(centerX, "", YPosition, 1, 0xF0F0F0);
     YPosition += 40;
@@ -48,13 +55,22 @@ char MultiManiaMenu()
 
 
 
-    DevMenu_DrawText(centerX - 116, "Conn Code: ", YPosition, 0, optionColours[0]);
+    DevMenu_DrawText(centerX - 116, "Connection Code: ", YPosition, 0, optionColours[0]);
     
-    DevMenu_DrawRect(centerX - 33, YPosition - 2, 148, 11, 0x00000000, 255, 0, 1);
-    DevMenu_DrawRect(centerX - 32, YPosition - 1, 146, 9, 0x00FFFFFF, 255, 0, 1);
-    DevMenu_DrawText(centerX - 30, "MM000000", YPosition, 0, 0x000000);
+    DevMenu_DrawRect(centerX + 19, YPosition - 2, 78, 11, 0x00000000, 255, 0, 1);
+    DevMenu_DrawRect(centerX + 20, YPosition - 1, 76, 9, 0x00FFFFFF, 255, 0, 1);
+    
+    char buf[2];
+    buf[1] = NULL;
+    for (int i = 0; i < 6; ++i)
+    {
+        buf[0] = '0' + MultiMania_Code[i];
+        DevMenu_DrawText(centerX + 43 + (i * 8), buf, YPosition, 0, i == MultiMania_CodePosition ? 0x00FF0000 : 0x00000000);
+    }
+    DevMenu_DrawText(centerX + 27, "MM", YPosition, 0, 0x000000);
     YPosition += 12;
     DevMenu_DrawText(centerX - 116, "Packets Per Secs.", YPosition, 0, optionColours[1]);
+
     DevMenu_DrawText(centerX  + 80, "<30>", YPosition, 0, 0xF0F07D);
     YPosition += 24;
     DevMenu_DrawText(centerX, "Connect", YPosition, 1, optionColours[2]);
@@ -66,15 +82,25 @@ char MultiManiaMenu()
     {
         if (!dword_6F0AE4)
         {
-            --DevMenu_Option;
-            if (DevMenu_Option < 0)
+            if (MultiMania_CodePosition == 6 || DevMenu_Option != 0)
             {
-                DevMenu_Option = count - 1;
-                if (DevMenu_Option >= 18)
-                    DevMenu_Scroll = DevMenu_Option - 18;
-                else
-                    DevMenu_Scroll = 0;
+                --DevMenu_Option;
+                if (DevMenu_Option < 0)
+                {
+                    DevMenu_Option = count - 1;
+                    if (DevMenu_Option >= 18)
+                        DevMenu_Scroll = DevMenu_Option - 18;
+                    else
+                        DevMenu_Scroll = 0;
+                }
             }
+            else
+            {
+                ++MultiMania_Code[MultiMania_CodePosition];
+                if (MultiMania_Code[MultiMania_CodePosition] > 9)
+                    MultiMania_Code[MultiMania_CodePosition] = 0;
+            }
+
         }
         result = (dword_6F0AE4 + 1) & 7;
         dword_6F0AE4 = result;
@@ -83,11 +109,20 @@ char MultiManiaMenu()
     {
         if (!dword_6F0AE4)
         {
-            ++DevMenu_Option;
-            if ((DevMenu_Option - DevMenu_Scroll) > 18)
-                ++DevMenu_Scroll;
-            if (DevMenu_Option > count - 1)
-                DevMenu_Option = 0;
+            if (MultiMania_CodePosition == 6 || DevMenu_Option != 0)
+            {
+                ++DevMenu_Option;
+                if ((DevMenu_Option - DevMenu_Scroll) > 18)
+                    ++DevMenu_Scroll;
+                if (DevMenu_Option > count - 1)
+                    DevMenu_Option = 0;
+            }
+            else
+            {
+                --MultiMania_Code[MultiMania_CodePosition];
+                if (MultiMania_Code[MultiMania_CodePosition] < 0)
+                    MultiMania_Code[MultiMania_CodePosition] = 9;
+            }
         }
         result = (dword_6F0AE4 + 1) & 7;
         dword_6F0AE4 = result;
@@ -96,12 +131,54 @@ char MultiManiaMenu()
     {
         if (!dword_6F0AE4)
         {
-            if (DevMenu_Option == 1)
+            if (DevMenu_Option == 0)
+            {
+                if (left)
+                    --MultiMania_CodePosition;
+                else
+                    ++MultiMania_CodePosition;
+
+                if (MultiMania_CodePosition < 0)
+                    MultiMania_CodePosition = 6;
+                else if(MultiMania_CodePosition > 6)
+                    MultiMania_CodePosition = 0;
+            }
+            else if (DevMenu_Option == 1)
             {
             }
         }
         result = (dword_6F0AE4 + 1) & 7;
         dword_6F0AE4 = result;
+    }
+    else if ((GetAsyncKeyState(VK_LCONTROL) & (1 << 15) || GetAsyncKeyState(VK_RCONTROL) & (1 << 15)) && GetAsyncKeyState('V') & (1 << 15))
+    {
+        OpenClipboard(nullptr);
+        HANDLE hData = GetClipboardData(CF_TEXT);
+        if (hData == nullptr)
+        {
+            CloseClipboard();
+            return (dword_6F0AE4 + 1) & 7;
+        }
+        char* pszText = static_cast<char*>(GlobalLock(hData));
+        if (pszText == nullptr)
+        {
+            CloseClipboard();
+            return (dword_6F0AE4 + 1) & 7;
+        }
+        string text(pszText);
+        GlobalUnlock(hData);
+        CloseClipboard();
+        if (text[0] == 'M' && text[1] == 'M')
+        {
+            bool valid = true;
+            for (int i = 0; i < 6; ++i)
+                if (text[2 + i] < '0' || text[2 + i] > '9')
+                    valid = false;
+            if (valid)
+                for (int i = 0; i < 6; ++i)
+                    MultiMania_Code[i] = text[2 + i] - '0';
+        }
+        result = (dword_6F0AE4 + 1) & 7;
     }
     else
     {
@@ -112,13 +189,19 @@ char MultiManiaMenu()
             switch (DevMenu_Option)
             {
             case 2:
-                if (!MultiMania_Connect("M000000"))
+                // Creates the Connection Code String
+                char connectioncode[9];
+                connectioncode[0] = connectioncode[1] = 'M';
+                for (int i = 0; i < 6; ++i)
+                    connectioncode[2 + i] = '0' + MultiMania_Code[i];
+                connectioncode[8] = NULL;
+                if (!MultiMania_Connect(connectioncode, MultiMania_PPS))
                 {
                     // Failed
                 }
                 break;
             case 3:
-                MultiMania_Host();
+                MultiMania_Host(MultiMania_PPS);
                 GameState = (GameStates)(GameState & ~GameState_DevMenu);
                 break;
             default:

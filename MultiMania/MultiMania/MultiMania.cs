@@ -36,14 +36,14 @@ namespace MultiMania
         }
 
         [DllExport(CallingConvention.Cdecl)]
-        public static bool MultiMania_Connect(string connectionCode)
+        public static bool MultiMania_Connect(string connectionCode, int PPS)
         {
-            MessageBox.Show(connectionCode);
+            MessageBox.Show("Connection Code: " + connectionCode);
             return false;
         }
 
         [DllExport(CallingConvention.Cdecl)]
-        public static bool MultiMania_Host()
+        public static bool MultiMania_Host(int PPS)
         {
             MessageBox.Show("Host");
             return false;
@@ -57,7 +57,7 @@ namespace MultiMania
             //network.RegisterPacketEvent(OnPacketRecv);
             //network.SendCommand(100);
             //network.CloseConnection();
-            OpenMenu();
+            //OpenMenu();
         }
 
 

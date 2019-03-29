@@ -13,21 +13,25 @@
 using namespace SonicMania;
 
 DefineMultiManiaFunc(InitMultiMania, ());
-DefineMultiManiaFunc(MultiMania_Connect, (const char* connectionCode));
-DefineMultiManiaFunc(MultiMania_Host, ());
+DefineMultiManiaFunc(MultiMania_Connect, (const char* connectionCode, int PPS));
+DefineMultiManiaFunc(MultiMania_Host, (int PPS));
 extern "C"
 {
 
     __declspec(dllexport) void OpenMenu()
     {
         DevMenu_Address = MultiManiaMenu;
-        GameState = GameState | GameState_DevMenu;
+        memset(MultiMania_Code, 0, 6);
+        MultiMania_CodePosition = 0;
+        GameState = GameState = GameState_DevMenu;
     }
 
     
     bool test = false;
     __declspec(dllexport) void OnFrame()
     {
+        if (PlayerControllers[0].Down.Down && PlayerControllers[0].Up.Press)
+            OpenMenu();
         if (!test)
         {
             test = true;
