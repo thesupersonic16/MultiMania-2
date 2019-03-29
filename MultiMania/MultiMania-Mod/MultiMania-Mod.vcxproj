@@ -30,27 +30,27 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>NotSet</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -72,15 +72,19 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>../../mania-mod-loader/ManiaModLoader/include;./include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <IncludePath>../../mania-mod-loader/ManiaModLoader/include;./include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>../../mania-mod-loader/ManiaModLoader/include;./include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <IncludePath>../../mania-mod-loader/ManiaModLoader/include;./include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -95,6 +99,13 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)..\Out" ( mkdir "$(SolutionDir)..\Out" )
+if exist "$(SolutionDir)..\Out\$(TargetName).dll" ( del "$(SolutionDir)..\Out\$(TargetName).dll" )
+if not exist "$(SolutionDir)..\Out\mod.ini" ( xcopy "$(SolutionDir)..\Data\mod.ini"  "$(SolutionDir)..\Out\" )
+if not exist "$(SolutionDir)..\Out\$(TargetName).dll" ( xcopy "$(TargetPath)"  "$(SolutionDir)..\Out\" )
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -109,6 +120,13 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)..\Out" ( mkdir "$(SolutionDir)..\Out" )
+if exist "$(SolutionDir)..\Out\$(TargetName).dll" ( del "$(SolutionDir)..\Out\$(TargetName).dll" )
+if not exist "$(SolutionDir)..\Out\mod.ini" ( xcopy "$(SolutionDir)..\Data\mod.ini"  "$(SolutionDir)..\Out\" )
+if not exist "$(SolutionDir)..\Out\$(TargetName).dll" ( xcopy "$(TargetPath)"  "$(SolutionDir)..\Out\" )
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -127,6 +145,13 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)..\Out" ( mkdir "$(SolutionDir)..\Out" )
+if exist "$(SolutionDir)..\Out\$(TargetName).dll" ( del "$(SolutionDir)..\Out\$(TargetName).dll" )
+if not exist "$(SolutionDir)..\Out\mod.ini" ( xcopy "$(SolutionDir)..\Data\mod.ini"  "$(SolutionDir)..\Out\" )
+if not exist "$(SolutionDir)..\Out\$(TargetName).dll" ( xcopy "$(TargetPath)"  "$(SolutionDir)..\Out\" )
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -145,8 +170,17 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(SolutionDir)..\Out" ( mkdir "$(SolutionDir)..\Out" )
+if exist "$(SolutionDir)..\Out\$(TargetName).dll" ( del "$(SolutionDir)..\Out\$(TargetName).dll" )
+if not exist "$(SolutionDir)..\Out\mod.ini" ( xcopy "$(SolutionDir)..\Data\mod.ini"  "$(SolutionDir)..\Out\" )
+if not exist "$(SolutionDir)..\Out\$(TargetName).dll" ( xcopy "$(TargetPath)"  "$(SolutionDir)..\Out\" )
+</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="MultiMania.h" />
+    <ClInclude Include="SonicMania.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -159,6 +193,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include=".editorconfig" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
