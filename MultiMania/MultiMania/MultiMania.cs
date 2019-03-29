@@ -5,11 +5,15 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace MultiMania
 {
     public class MultiMania
     {
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        public delegate void Callback();
 
         private static string GetServerAddress()
         {
@@ -26,24 +30,39 @@ namespace MultiMania
             if (data[0] == 100)
             {
                 string s = Encoding.ASCII.GetString(data, 1, data.Length - 1);
-                Test(s);
+                //Test(s);
             }
             return true;
         }
 
         [DllExport(CallingConvention.Cdecl)]
+        public static bool MultiMania_Connect(string connectionCode)
+        {
+            MessageBox.Show(connectionCode);
+            return false;
+        }
+
+        [DllExport(CallingConvention.Cdecl)]
+        public static bool MultiMania_Host()
+        {
+            MessageBox.Show("Host");
+            return false;
+        }
+
+        [DllExport(CallingConvention.Cdecl)]
         public static void InitMultiMania()
         {
-            var network = new Network();
-            network.OpenConnection(GetServerAddress(), 16004);
-            network.RegisterPacketEvent(OnPacketRecv);
-            network.SendCommand(100);
+            //var network = new Network();
+            //network.OpenConnection(GetServerAddress(), 16004);
+            //network.RegisterPacketEvent(OnPacketRecv);
+            //network.SendCommand(100);
             //network.CloseConnection();
+            OpenMenu();
         }
 
 
         [DllImport("MultiMania-Mod.dll")]
-        public static extern int Test(string code);
+        public static extern int OpenMenu();
 
     }
 }

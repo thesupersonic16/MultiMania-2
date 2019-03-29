@@ -180,6 +180,7 @@ if not exist "$(SolutionDir)..\Out\$(TargetName).dll" ( xcopy "$(TargetPath)"  "
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MultiMania.h" />
+    <ClInclude Include="MultiManiaMenu.h" />
     <ClInclude Include="SonicMania.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -187,6 +188,7 @@ if not exist "$(SolutionDir)..\Out\$(TargetName).dll" ( xcopy "$(TargetPath)"  "
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="MultiMania-Mod.cpp" />
+    <ClCompile Include="MultiManiaMenu.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

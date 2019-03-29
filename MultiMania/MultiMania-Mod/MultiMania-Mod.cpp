@@ -8,17 +8,23 @@
 #include <algorithm>
 #include <vector>
 #include "MultiMania.h"
+#include "MultiManiaMenu.h"
 
 using namespace SonicMania;
 
+DefineMultiManiaFunc(InitMultiMania, ());
+DefineMultiManiaFunc(MultiMania_Connect, (const char* connectionCode));
+DefineMultiManiaFunc(MultiMania_Host, ());
 extern "C"
 {
 
-    __declspec(dllexport) void Test(const char *code)
+    __declspec(dllexport) void OpenMenu()
     {
-        printf(code);
+        DevMenu_Address = MultiManiaMenu;
+        GameState = GameState | GameState_DevMenu;
     }
 
+    
     bool test = false;
     __declspec(dllexport) void OnFrame()
     {
