@@ -15,16 +15,6 @@ namespace MultiMania
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate void Callback();
 
-        private static string GetServerAddress()
-        {
-            var wc = new WebClient();
-            string address = Encoding.ASCII.GetString(
-                wc.DownloadData("http://multimania.codenamegamma.com/address.txt")
-                );
-            wc.Dispose();
-            return address;
-        }
-
         private static bool OnPacketRecv(byte[] data, IPEndPoint ip)
         {
             if (data[0] == 100)
@@ -60,9 +50,28 @@ namespace MultiMania
             //OpenMenu();
         }
 
+        public enum Character
+        {
+            Sonic = 0b0000_0001,
+            Tails = 0b0000_0010,
+            Knuckles = 0b0000_0100,
+            Mighty = 0b0000_1000,
+            Ray = 0b0001_0000
+        }
+
 
         [DllImport("MultiMania-Mod.dll")]
         public static extern int OpenMenu();
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern void MultiMania_Mod_ChangeScene(byte scene);
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern byte MultiMania_Mod_GetScene();
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern void MultiMania_Mod_SetCharacter(byte slot, Character character);
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern Character MultiMania_Mod_GetCharacter(byte slot);
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern void MultiMania_Mod_WritePlayerData(byte slot, byte[] data);
 
     }
 }
