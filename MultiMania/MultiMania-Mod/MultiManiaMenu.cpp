@@ -202,7 +202,7 @@ char MultiManiaMenu()
                 break;
             case 3:
                 MultiMania_Host(MultiMania_PPS);
-                GameState = (GameStates)(GameState & ~GameState_DevMenu);
+                //GameState = (GameStates)(GameState & ~GameState_DevMenu);
                 break;
             default:
                 break;

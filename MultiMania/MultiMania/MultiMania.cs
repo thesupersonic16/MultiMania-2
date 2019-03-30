@@ -12,32 +12,35 @@ namespace MultiMania
     public class MultiMania
     {
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void Callback();
-
-        private static bool OnPacketRecv(byte[] data, IPEndPoint ip)
-        {
-            if (data[0] == 100)
-            {
-                string s = Encoding.ASCII.GetString(data, 1, data.Length - 1);
-                //Test(s);
-            }
-            return true;
-        }
-
         [DllExport(CallingConvention.Cdecl)]
         public static bool MultiMania_Connect(string connectionCode, int PPS)
         {
-            MessageBox.Show("Connection Code: " + connectionCode);
-            return false;
+            MultiManiaConnectionHandler.Connect(connectionCode);
+            return true;
         }
 
         [DllExport(CallingConvention.Cdecl)]
         public static bool MultiMania_Host(int PPS)
         {
-            MessageBox.Show("Host");
-            return false;
+            MultiManiaConnectionHandler.Host(PPS);
+            return true;
         }
+
+        [DllExport(CallingConvention.Cdecl)]
+        public static void MultiMania_Update()
+        {
+            if (MultiManiaConnectionHandler.Connection.Connected && !MultiManiaConnectionHandler.Bonk)
+            {
+                var data = new byte[25];
+                MultiMania_Mod_ReadPlayerData(0, data);
+                var bytes = new byte[25 + 8];
+                Array.Copy(data, 0, bytes, 8, data.Length);
+                Array.Copy(BitConverter.GetBytes(MultiManiaConnectionHandler.PacketCountSEND), 0, bytes, 0, 8);
+                MultiManiaConnectionHandler.Connection.SendData(10, MultiManiaConnectionHandler.Compress(bytes));
+                ++MultiManiaConnectionHandler.PacketCountSEND;
+            }
+        }
+
 
         [DllExport(CallingConvention.Cdecl)]
         public static void InitMultiMania()
@@ -72,6 +75,8 @@ namespace MultiMania
         public static extern Character MultiMania_Mod_GetCharacter(byte slot);
         [DllImport("MultiMania-Mod.dll")]
         public static extern void MultiMania_Mod_WritePlayerData(byte slot, byte[] data);
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern void MultiMania_Mod_ReadPlayerData(byte slot, [In, Out] byte[] data);
 
     }
 }

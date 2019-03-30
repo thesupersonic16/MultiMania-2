@@ -13,9 +13,9 @@ namespace MultiMania
     {
 
         public static Network Connection = new Network();
-        private static ulong PacketCountSEND = 0;
-        private static ulong PacketCountRECV = 0;
-        private static bool Bonk = false;
+        public static ulong PacketCountSEND = 0;
+        public static ulong PacketCountRECV = 0;
+        public static bool Bonk = false;
 
         public static void Connect(string connectionCode)
         {
@@ -30,6 +30,21 @@ namespace MultiMania
             Connection.OpenConnection(GetServerAddress(), 16004);
             Connection.Hosting = false;
             Connection.SendData(101, Encoding.ASCII.GetBytes(connectionCode));
+        }
+
+        public static void Host(int PPS)
+        {
+            // Unregisters all events
+            Connection.UnregisterAllPacketEvents();
+            // Registers the receive event
+            Connection.RegisterPacketEvent(OnPacketRecv);
+            // Closes the connection in case its still open for whatever reason
+            Connection.CloseConnection();
+            // TODO: Write Patches
+
+            Connection.OpenConnection(GetServerAddress(), 16004);
+            Connection.Hosting = true;
+            Connection.SendCommand(100);
         }
 
         public static byte[] Compress(byte[] data)
@@ -83,10 +98,11 @@ namespace MultiMania
                 {
                     MultiMania.MultiMania_Mod_SetCharacter(0, (MultiMania.Character)data[2]);
                     MultiMania.MultiMania_Mod_SetCharacter(1, (MultiMania.Character)data[3]);
-                    MultiMania.MultiMania_Mod_SetCharacter(2, (MultiMania.Character)data[4]);
-                    MultiMania.MultiMania_Mod_SetCharacter(3, (MultiMania.Character)data[5]);
+                    //MultiMania.MultiMania_Mod_SetCharacter(2, (MultiMania.Character)data[4]);
+                    //MultiMania.MultiMania_Mod_SetCharacter(3, (MultiMania.Character)data[5]);
                     MultiMania.MultiMania_Mod_ChangeScene(data[1]);
-                    Connection.SendData(18, new byte[] { data[1], data[2], data[3], data[4], data[5] });
+                    //Connection.SendData(18, new byte[] { data[1], data[2], data[3], data[4], data[5] });
+                    Connection.SendData(18, new byte[] { data[1], data[2], data[3] });
                 }
                 else
                 {
@@ -112,10 +128,15 @@ namespace MultiMania
                 {
                     MultiMania.MultiMania_Mod_SetCharacter(0, (MultiMania.Character)data[3]);
                     MultiMania.MultiMania_Mod_SetCharacter(1, (MultiMania.Character)data[2]);
-                    MultiMania.MultiMania_Mod_SetCharacter(2, (MultiMania.Character)data[4]);
-                    MultiMania.MultiMania_Mod_SetCharacter(3, (MultiMania.Character)data[5]);
+                    //MultiMania.MultiMania_Mod_SetCharacter(2, (MultiMania.Character)data[4]);
+                    //MultiMania.MultiMania_Mod_SetCharacter(3, (MultiMania.Character)data[5]);
                     MultiMania.MultiMania_Mod_ChangeScene(data[1]);
                 }
+            }
+            if (data[0] == 100)
+            {
+                string s = Encoding.ASCII.GetString(data, 1, data.Length - 1);
+                Console.WriteLine(s);
             }
             if (data[0] == 102)
             {
@@ -132,6 +153,7 @@ namespace MultiMania
 
             if (data[0] == 103)
             { // Invalid Connection Code
+                Connection.Status = "Invalid Connection Code!";
                 Connection.CloseConnection();
             }
             return true;
