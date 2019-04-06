@@ -133,9 +133,18 @@ namespace MultiMania
                     MultiMania.MultiMania_Mod_ChangeScene(data[1]);
                 }
             }
+            if (data[0] == 19)
+            { // Spawn Object
+                byte LevelID = MultiMania.MultiMania_Mod_GetScene();
+                if (LevelID > 8)
+                {
+                    MultiMania.MultiMania_Mod_SpawnObject(BitConverter.ToInt16(data, 1), BitConverter.ToInt16(data, 3), BitConverter.ToInt32(data, 5), BitConverter.ToInt32(data, 9));
+                }
+            }
             if (data[0] == 100)
             {
                 string s = Encoding.ASCII.GetString(data, 1, data.Length - 1);
+                MultiMania.MultiMania_Mod_SendHostConnectionCode(s);
                 Console.WriteLine(s);
             }
             if (data[0] == 102)
@@ -149,12 +158,14 @@ namespace MultiMania
                 PacketCountSEND = 0;
                 PacketCountRECV = 0;
                 Bonk = false;
+                MultiMania.MultiMania_Mod_SendEvent(0);
             }
 
             if (data[0] == 103)
             { // Invalid Connection Code
                 Connection.Status = "Invalid Connection Code!";
                 Connection.CloseConnection();
+                MultiMania.MultiMania_Mod_SendEvent(1);
             }
             return true;
         }

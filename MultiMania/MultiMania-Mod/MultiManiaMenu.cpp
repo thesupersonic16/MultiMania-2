@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include <ManiaModLoader.h>
-#include <SonicMania.h>
 #include <string>
 #include <algorithm>
 #include <vector>
@@ -17,6 +16,10 @@ int MultiMania_Code[6];
 int MultiMania_CodePosition;
 int MultiMania_PPS;
 
+static int ConnectionTimer = 0;
+
+char MultiManiaMenu_ConnectionError_TIMEOUT();
+
 DataPointer(BYTE, Controller_A, 0x0044170C);
 DataPointer(BYTE, Key_Enter, 0x00441754);
 DataPointer(BYTE, Key_Up, 0x004416D8);
@@ -28,11 +31,12 @@ char MultiManiaMenu()
     char result;
 
     // Centre of the Screen
+
     int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
     int YPosition = centerY - 84;
 
-    DevMenu_DrawRect(0, 0, centerX * 2, centerY * 2, 0x000000, 255, 0, 1);
+    //DevMenu_DrawRect(0, 0, centerX * 2, centerY * 2, 0x000000, 255, 0, 1);
     // Title
     DevMenu_DrawRect(centerX - 128, centerY - 84, 256, 48, 0x00000080, 255, 0, 1);
     YPosition += 6;
@@ -208,6 +212,107 @@ char MultiManiaMenu()
                 break;
             }
         }
+    }
+    return result;
+}
+
+char MultiManiaMenu_Connecting()
+{
+    char result;
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+    
+    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00000080, 255, 0, 1);
+    DevMenu_DrawText(centerX, "Connecting...", centerY - 4, 1, 0xF0F0F0);
+
+    result = Key_Enter | Controller_A;
+    dword_6F0AE4 = 0;
+    if ((Key_Enter | Controller_A) == 1)
+        GameState = *(GameStates*)0x002FBB54;
+    ++ConnectionTimer;
+
+    if (ConnectionTimer > 120)
+    {
+        ConnectionTimer = 0;
+        MultiMania_Close();
+        DevMenu_Address = MultiManiaMenu_ConnectionError_TIMEOUT;
+    }
+    return result;
+}
+
+char MultiManiaMenu_Host_Code()
+{
+    char result;
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+
+    char buf[9];
+    buf[8] = NULL;
+    buf[0] = 'M';
+    buf[1] = 'M';
+    for (int i = 0; i < 6; ++i)
+        buf[i + 2] = '0' + MultiMania_Code[i];
+    
+    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00008000, 255, 0, 1);
+    DevMenu_DrawText(centerX, (string("Connection Code: ") + buf).c_str(), centerY - 4, 1, 0xF0F0F0);
+
+    result = Key_Enter | Controller_A;
+    dword_6F0AE4 = 0;
+    return result;
+}
+
+char MultiManiaMenu_Host_MMSERVER()
+{
+    char result;
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+
+    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00000080, 255, 0, 1);
+    DevMenu_DrawText(centerX, "Connecting to MultiMania Server...", centerY - 4, 1, 0xF0F0F0);
+
+    result = Key_Enter | Controller_A;
+    dword_6F0AE4 = 0;
+    return result;
+}
+
+
+char MultiManiaMenu_ConnectionError_INVALIDCC()
+{
+    char result;
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+
+    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00800000, 255, 0, 1);
+    DevMenu_DrawText(centerX, "Connection Failed! Invalid Connection Code!", centerY - 4, 1, 0xF0F0F0);
+
+    result = Key_Enter | Controller_A;
+    dword_6F0AE4 = 0;
+    if ((Key_Enter | Controller_A) == 1)
+    {
+        GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+    }
+    return result;
+}
+
+char MultiManiaMenu_ConnectionError_TIMEOUT()
+{
+    char result;
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+
+    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00800000, 255, 0, 1);
+    DevMenu_DrawText(centerX, "Connection Failed! Connection Timed out!", centerY - 4, 1, 0xF0F0F0);
+
+    result = Key_Enter | Controller_A;
+    dword_6F0AE4 = 0;
+    if ((Key_Enter | Controller_A) == 1)
+    {
+        GameState = *(GameStates*)(baseAddress + 0x002FBB54);
     }
     return result;
 }

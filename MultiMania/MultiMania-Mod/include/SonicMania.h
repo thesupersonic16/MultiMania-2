@@ -410,7 +410,7 @@ namespace SonicMania
 #pragma region Constents
 
     // Player Status
-    #define PlayerStatus_None                   (SonicMania::PlayerStatus)(baseAddress + 0x00000000) // TODO: needs updating
+    #define PlayerStatus_None                   (SonicMania::PlayerStatus)(0x00000000)
     #define PlayerStatus_Standing               (SonicMania::PlayerStatus)(baseAddress + 0x000CAD80)
     #define PlayerStatus_Jumping                (SonicMania::PlayerStatus)(baseAddress + 0x000CB6C0)
     #define PlayerStatus_LookingDown            (SonicMania::PlayerStatus)(baseAddress + 0x000CBBD0)
@@ -1067,6 +1067,16 @@ namespace SonicMania
     inline int* GetAddress(int baseAddress, int offset1, int offset2)
     {
         return (int*)(*(int*)GetAddress(baseAddress, offset1) + offset2);
+    }
+    static BYTE GetSpritePointer(int SpritePointer, int offset)
+    {
+        int* pointer = (int*)(baseAddress + SpritePointer);
+        if (!*pointer)
+            return 0;
+        pointer = (int*)(*pointer + offset);
+        if (!*pointer)
+            return 0;
+        return *pointer;
     }
 #pragma endregion
 

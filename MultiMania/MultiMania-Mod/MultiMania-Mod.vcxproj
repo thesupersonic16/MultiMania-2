@@ -179,9 +179,9 @@ if not exist "$(SolutionDir)..\Out\$(TargetName).dll" ( xcopy "$(TargetPath)"  "
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="include\SonicMania.h" />
     <ClInclude Include="MultiMania.h" />
     <ClInclude Include="MultiManiaMenu.h" />
-    <ClInclude Include="SonicMania.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>

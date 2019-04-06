@@ -14,8 +14,11 @@ using namespace SonicMania;
 
 DefineMultiManiaFunc(InitMultiMania, ());
 DefineMultiManiaFunc(MultiMania_Connect, (const char* connectionCode, int PPS));
+DefineMultiManiaFunc(MultiMania_Close, ());
 DefineMultiManiaFunc(MultiMania_Host, (int PPS));
 DefineMultiManiaFunc(MultiMania_Update, ());
+DefineMultiManiaFunc(MultiMania_IsHost, ());
+DefineMultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
 extern "C"
 {
 
@@ -33,7 +36,8 @@ extern "C"
     {
         DevMenu_Address = MultiManiaMenu;
         memset(MultiMania_Code, 0, 6);
-        MultiMania_CodePosition = 0;
+        MultiMania_CodePosition = 6;
+        *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
         GameState = GameState_DevMenu;
     }
 
@@ -57,53 +61,78 @@ extern "C"
         return GetCharacter(slot);
     }
 
+    __declspec(dllexport) int MultiMania_Mod_GetLevelTimer()
+    {
+        return *GetAddress(baseAddress + 0x00AC690C, 0x7C);
+    }
+
+    __declspec(dllexport) void MultiMania_Mod_SetLevelTimer(int timer)
+    {
+        *GetAddress(baseAddress + 0x00AC690C, 0x7C) = timer;
+    }
+
+    __declspec(dllexport) void MultiMania_Mod_SendHostConnectionCode(const char* connectionCode)
+    {
+        DevMenu_Address = MultiManiaMenu_Host_Code;
+        for (int i = 0; i < 6; ++i)
+            MultiMania_Code[i] = connectionCode[2 + i] - '0';
+    }
+
+
+    __declspec(dllexport) void MultiMania_Mod_SendEvent(int errorcode)
+    {
+        switch (errorcode)
+        {
+        case 0:
+            GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+            break;
+        case 1:
+            DevMenu_Address = MultiManiaMenu_ConnectionError_INVALIDCC;
+            break;
+        default:
+            break;
+        }
+    }
+
     __declspec(dllexport) void MultiMania_Mod_WritePlayerData(BYTE slot, BYTE* data)
     {
         memcpy(LastPacket, data, 25);
         Processed = false;
     }
 
-    static BYTE GetSpritePointer(int SpritePointer, int offset)
-    {
-        int* pointer = (int*)(baseAddress + SpritePointer);
-        if (!*pointer)
-            return 0;
-        pointer = (int*)(*pointer + offset);
-        if (!*pointer)
-            return 0;
-        return *pointer;
-
-    }
-    __declspec(dllexport) void MultiMania_Mod_WritePlayerData_Process(BYTE slot, BYTE* data)
+    __declspec(dllexport) void MultiMania_Mod_WritePlayerData_Process(BYTE slot, BYTE* data, bool host)
     {
         auto &player = *(EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * slot);
         int counter = 0;
-        short x = *(short*)(data + counter); counter += 2;
-        short y = *(short*)(data + counter); counter += 2;
-        player.LifeCount = (int)data[counter++];
-        player.RingCount = *(short*)(data + counter); counter += 2;
-        short animID = *(short*)(data + counter); counter += 2;
-        short frameID = *(short*)(data + counter); counter += 2;
-        SetSpriteAnimation(player.SpriteIndex, animID, &player.Animation, true, frameID);
-        player.InputStatus = InputStatus_None;
-        player.Status = nullptr;
-
-        if (x == 0 && y == 0)
+        if (*(int*)(baseAddress + 0x00AC690C) != 0)
         {
-            player.LifeCount = 3;
+            short x = *(short*)(data + counter); counter += 2;
+            short y = *(short*)(data + counter); counter += 2;
+            player.LifeCount = (int)data[counter++];
+            player.RingCount = *(short*)(data + counter); counter += 2;
+            short animID = *(short*)(data + counter); counter += 2;
+            short frameID = *(short*)(data + counter); counter += 2;
+            SetSpriteAnimation(player.SpriteIndex, animID, &player.Animation, true, frameID);
+            player.InputStatus = InputStatus_None;
+            player.Status = PlayerStatus_None;
+
+            if (x == 0 && y == 0)
+            {
+                player.LifeCount = 3;
+            }
+            else
+            {
+                player.Position.X = x;
+                player.Position.Y = y;
+            }
+            if (!host)
+                MultiMania_Mod_SetLevelTimer(*(int*)(data + counter));
+            counter += 4;
+
+            player.Shield = (ShieldType)data[counter++];
+            player.IsFacingLeft = data[counter++];
+            player.Angle = *(int*)(data + counter); counter += 4;
         }
-        else
-        {
-            player.Position.X = x;
-            player.Position.Y = y;
-        }
-        int levelTimer = *(int*)(data + counter); counter += 4;
-
-        player.Shield = (ShieldType)data[counter++];
-        player.IsFacingLeft = data[counter++];
-        player.Angle = *(int*)(data + counter); counter += 4;
-
-
     }
 
     __declspec(dllexport) void MultiMania_Mod_WritePlayerData_Process_old(BYTE slot, BYTE* data)
@@ -187,16 +216,19 @@ extern "C"
         auto &player = *(EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * slot);
         int counter = 0;
 
-        *(short*)(data + counter) = player.Position.X; counter += 2;
-        *(short*)(data + counter) = player.Position.Y; counter += 2;
-        *(BYTE*)(data + counter) = player.LifeCount; counter += 1;
-        *(short*)(data + counter) = player.RingCount; counter += 2;
-        *(short*)(data + counter) = player.Animation.AnimationID; counter += 2;
-        *(short*)(data + counter) = player.Animation.FrameID; counter += 2;
-        *(int*)(data + counter) = 0; counter += 4;
-        *(BYTE*)(data + counter) = player.Shield; counter += 1;
-        *(BYTE*)(data + counter) = player.IsFacingLeft; counter += 1;
-        *(int*)(data + counter) = player.Angle; counter += 4;
+        if (*(int*)(baseAddress + 0x00AC690C) != 0)
+        {
+            *(short*)(data + counter) = player.Position.X; counter += 2;
+            *(short*)(data + counter) = player.Position.Y; counter += 2;
+            *(BYTE*)(data + counter) = player.LifeCount; counter += 1;
+            *(short*)(data + counter) = player.RingCount; counter += 2;
+            *(short*)(data + counter) = player.Animation.AnimationID; counter += 2;
+            *(short*)(data + counter) = player.Animation.FrameID; counter += 2;
+            *(int*)(data + counter) = MultiMania_Mod_GetLevelTimer(); counter += 4;
+            *(BYTE*)(data + counter) = player.Shield; counter += 1;
+            *(BYTE*)(data + counter) = player.IsFacingLeft; counter += 1;
+            *(int*)(data + counter) = player.Angle; counter += 4;
+        }
     }
 
     __declspec(dllexport) void MultiMania_Mod_ReadPlayerData_old(BYTE slot, BYTE* data)
@@ -234,19 +266,31 @@ extern "C"
     __declspec(dllexport) void OnFrame()
     {
         test = !test;
-        if (PlayerControllers[0].Down.Down && PlayerControllers[0].Up.Press)
+        if (PlayerControllers[0].Down.Down && PlayerControllers[0].Up.Press && (GameState & GameState_DevMenu) != GameState_DevMenu)
             OpenMenu();
-        if (!test)
+        //if (!test)
         {
             MultiMania_Update();
             if (!Processed && LastPacket)
             {
-                MultiMania_Mod_WritePlayerData_Process(1, LastPacket);
+                MultiMania_Mod_WritePlayerData_Process(1, LastPacket, MultiMania_IsHost());
                 //MultiMania_Mod_WritePlayerData_Process(1, LastPacket);
                 Processed = false;
             }
         }
         //MultiMania_Mod_WritePlayerData_Process_old(1, LastPacket);
+    }
+
+    Entity* SpawnObject_r(short objectID, short subObject, DWORD x, DWORD y)
+    {
+        if (CurrentScene >= Scene_GHZ1)
+            MultiMania_SpawnObject(objectID, subObject, x, y);
+        return SpawnObject_Internal(objectID, subObject, x, y);
+    }
+
+    __declspec(dllexport) void MultiMania_Mod_SpawnObject(short objectID, short subObject, DWORD x, DWORD y)
+    {
+        SpawnObject_Internal(objectID, subObject, x, y);
     }
 
     __declspec(dllexport) void Init(const char *path)
@@ -257,6 +301,7 @@ extern "C"
         MultiManiaCS = LoadLibrary("MultiMania.dll");
         SetCurrentDirectoryA(buffer);
         LoadExports();
+        *(int*)(baseAddress + 0x00AA7768) = (int)SpawnObject_r;
     }
 
     __declspec(dllexport) ModInfo ManiaModInfo = { ModLoaderVer, GameVer };
