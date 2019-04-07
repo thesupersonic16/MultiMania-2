@@ -32,6 +32,33 @@ extern "C"
     static BYTE LastPacket[25];
     static bool Processed = true;
 
+    // TODO: Write comment on how these offsets are made
+    __declspec(dllexport) void MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID)
+    {
+        // Player 2 Score
+        if (*(int*)(baseAddress + 0x00AA763C) != 0)
+        {
+            *GetAddress(baseAddress + 0x00AA763C, 0x00031184) = score;
+            *GetAddress(baseAddress + 0x00AA763C, 0x00031174) = finalRings;
+            *GetAddress(baseAddress + 0x00AA763C, 0x000311D8) = totalRings;
+            *GetAddress(baseAddress + 0x00AA763C, 0x00031194) = itemboxes;
+        }
+    }
+
+    __declspec(dllexport) void MultiMania_Mod_ReadResultData(int playerID, BYTE* data)
+    {
+        int counter = 0;
+
+        if (*(int*)(baseAddress + 0x00AA763C) != 0)
+        {
+            *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x00031180); counter += 4;
+            *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x00031170); counter += 4;
+            *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x000311D4); counter += 4;
+            *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x00031190); counter += 4;
+        }
+    }
+
+
     __declspec(dllexport) void OpenMenu()
     {
         DevMenu_Address = MultiManiaMenu;
