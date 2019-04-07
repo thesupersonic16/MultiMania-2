@@ -134,11 +134,19 @@ namespace MultiMania
                 }
             }
             if (data[0] == 19)
-            { // Spawn Object
+            { // Spawn Object, Doesn't work
                 byte LevelID = MultiMania.MultiMania_Mod_GetScene();
                 if (LevelID > 8)
                 {
                     MultiMania.MultiMania_Mod_SpawnObject(BitConverter.ToInt16(data, 1), BitConverter.ToInt16(data, 3), BitConverter.ToInt32(data, 5), BitConverter.ToInt32(data, 9));
+                }
+            }
+            if (data[0] == 20)
+            { // Result Data
+                byte LevelID = MultiMania.MultiMania_Mod_GetScene();
+                if (LevelID > 8)
+                {
+                    MultiMania.MultiMania_Mod_SetResultData(BitConverter.ToInt32(data, 1), BitConverter.ToInt32(data, 5), BitConverter.ToInt32(data, 9), BitConverter.ToInt32(data, 13), 1);
                 }
             }
             if (data[0] == 100)

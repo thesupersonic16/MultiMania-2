@@ -12,6 +12,8 @@ namespace MultiMania
     public class MultiMania
     {
 
+        public static int Timer = 0;
+
         [DllExport(CallingConvention.Cdecl)]
         public static bool MultiMania_Connect(string connectionCode, int PPS)
         {
@@ -48,13 +50,27 @@ namespace MultiMania
             Array.Copy(BitConverter.GetBytes(subObject), 0, data, 2, 2);
             Array.Copy(BitConverter.GetBytes(x), 0, data, 4, 4);
             Array.Copy(BitConverter.GetBytes(y), 0, data, 8, 4);
-            MultiManiaConnectionHandler.Connection.SendData(10, data);
+            MultiManiaConnectionHandler.Connection.SendData(19, data);
             return true;
         }
 
         [DllExport(CallingConvention.Cdecl)]
+        public static bool MultiMania_ReadResultData(int ringsToAdd, int player, bool playSoundFX)
+        {
+            var data = new byte[9];
+            Array.Copy(BitConverter.GetBytes(ringsToAdd), 0, data, 0, 4);
+            Array.Copy(BitConverter.GetBytes(player), 0, data, 4, 4);
+            Array.Copy(BitConverter.GetBytes(playSoundFX), 0, data, 8, 1);
+            MultiManiaConnectionHandler.Connection.SendData(20, data);
+            return true;
+        }
+
+
+        [DllExport(CallingConvention.Cdecl)]
         public static void MultiMania_Update()
         {
+            if (Timer == 0)
+                Timer = 60;
             if (MultiManiaConnectionHandler.Connection.Connected && !MultiManiaConnectionHandler.Bonk)
             {
                 var data = new byte[25];
@@ -64,6 +80,12 @@ namespace MultiMania
                 Array.Copy(BitConverter.GetBytes(MultiManiaConnectionHandler.PacketCountSEND), 0, bytes, 0, 8);
                 MultiManiaConnectionHandler.Connection.SendData(10, MultiManiaConnectionHandler.Compress(bytes));
                 ++MultiManiaConnectionHandler.PacketCountSEND;
+                if (Timer % 4 == 0)
+                {
+                    var resultData = new byte[16];
+                    MultiMania_Mod_ReadResultData(0, resultData);
+                    MultiManiaConnectionHandler.Connection.SendData(20, resultData);
+                }
             }
         }
 
@@ -101,6 +123,10 @@ namespace MultiMania
         public static extern Character MultiMania_Mod_GetCharacter(byte slot);
         [DllImport("MultiMania-Mod.dll")]
         public static extern void MultiMania_Mod_SendEvent(int errorcode);
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern int MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID);
+        [DllImport("MultiMania-Mod.dll")]
+        public static extern int MultiMania_Mod_ReadResultData(int playerID, [In, Out] byte[] data);
         [DllImport("MultiMania-Mod.dll")]
         public static extern void MultiMania_Mod_SendHostConnectionCode(string connectionCode);
         [DllImport("MultiMania-Mod.dll")]
