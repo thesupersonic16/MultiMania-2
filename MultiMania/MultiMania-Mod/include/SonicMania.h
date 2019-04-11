@@ -17,6 +17,7 @@ namespace SonicMania
 
     typedef void(__cdecl *Ability)();
     typedef void(__cdecl *PlayerStatus)();
+    typedef void(__cdecl *InputStatus)();
 
 #pragma endregion
 
@@ -212,13 +213,6 @@ namespace SonicMania
         ItemBoxItem_LifeRay
     };
 
-    enum InputStatuses
-    {
-        InputStatus_PlayerInput     = 0x000C3E00,
-        InputStatus_AI              = 0x000C4340,
-        InputStatus_None            = 0x00000000
-    };
-
     // TODO: needs updating
     enum ObjectType
     {
@@ -410,6 +404,12 @@ namespace SonicMania
 #pragma region Constents
 
     // Player Status
+    #define InputStatus_None                    (SonicMania::PlayerStatus)(0x00000000)
+    #define InputStatus_PlayerInput             (SonicMania::PlayerStatus)(baseAddress + 0x000C3E00)
+    #define InputStatus_AI                      (SonicMania::PlayerStatus)(baseAddress + 0x000C4340)
+
+
+    // Player Status
     #define PlayerStatus_None                   (SonicMania::PlayerStatus)(0x00000000)
     #define PlayerStatus_Standing               (SonicMania::PlayerStatus)(baseAddress + 0x000CAD80)
     #define PlayerStatus_Jumping                (SonicMania::PlayerStatus)(baseAddress + 0x000CB6C0)
@@ -435,44 +435,41 @@ namespace SonicMania
     #define PlayerStatus_ScoreCard              (SonicMania::PlayerStatus)(baseAddress + 0x000CCD30)
     
     // Sonic
-    #define PlayerStatus_Sonic_DropDash         (PlayerStatus)0x004CC1F0 // TODO: needs updating
-    #define PlayerStatus_Sonic_Peelout          (PlayerStatus)0x004CBF70 // TODO: needs updating
+    #define PlayerStatus_Sonic_DropDash         (SonicMania::PlayerStatus)(baseAddress + 0x004CC1F0) // TODO: needs updating
+    #define PlayerStatus_Sonic_Peelout          (SonicMania::PlayerStatus)(baseAddress + 0x004CBF70) // TODO: needs updating
      
     // Tails
-    #define PlayerStatus_Tails_Flying           (PlayerStatus)0x000CCF30
-    #define PlayerStatus_Tails_Hanging          (PlayerStatus)0x004CDA60 // TODO: needs updating
+    #define PlayerStatus_Tails_Flying           (SonicMania::PlayerStatus)(baseAddress + 0x000CCF30)
+    #define PlayerStatus_Tails_Hanging          (SonicMania::PlayerStatus)(baseAddress + 0x004CDA60) // TODO: needs updating
     
     // Knuckles
-    #define PlayerStatus_Knuckles_GlidingLeft   (PlayerStatus)0x000CDB10
-    #define PlayerStatus_Knuckles_GlidingRight  (PlayerStatus)0x000CDE10
-    #define PlayerStatus_Knuckles_Sliding       (PlayerStatus)0x004CE230 // TODO: needs updating
-    #define PlayerStatus_Knuckles_Climbing      (PlayerStatus)0x000CE380
-    #define PlayerStatus_Knuckles_GettingUp     (PlayerStatus)0x004CE6F0 // TODO: needs updating
-    #define PlayerStatus_Knuckles_Falling       (PlayerStatus)0x000CE110
+    #define PlayerStatus_Knuckles_GlidingLeft   (SonicMania::PlayerStatus)(baseAddress + 0x000CDB10)
+    #define PlayerStatus_Knuckles_GlidingRight  (SonicMania::PlayerStatus)(baseAddress + 0x000CDE10)
+    #define PlayerStatus_Knuckles_Sliding       (SonicMania::PlayerStatus)(baseAddress + 0x004CE230) // TODO: needs updating
+    #define PlayerStatus_Knuckles_Climbing      (SonicMania::PlayerStatus)(baseAddress + 0x000CE380)
+    #define PlayerStatus_Knuckles_GettingUp     (SonicMania::PlayerStatus)(baseAddress + 0x004CE6F0) // TODO: needs updating
+    #define PlayerStatus_Knuckles_Falling       (SonicMania::PlayerStatus)(baseAddress + 0x000CE110)
     
     // Mighty
-    #define PlayerStatus_Mighty_HammerDrop      (PlayerStatus)0x000CC580
+    #define PlayerStatus_Mighty_HammerDrop      (SonicMania::PlayerStatus)(baseAddress + 0x000CC580)
     
     // Ray
-    #define PlayerStatus_Ray_Flying             (PlayerStatus)0x000CD660
+    #define PlayerStatus_Ray_Flying             (SonicMania::PlayerStatus)(baseAddress + 0x000CD660)
+
+    // Move Sets
+    #define MOVESET_NONE    (SonicMania::Ability)(0x00000000)
+    #define MOVESET_SONIC   (SonicMania::Ability)(baseAddress + 0x000C8630)
+    #define MOVESET_TAILS   (SonicMania::Ability)(baseAddress + 0x000C8990)
+    #define MOVESET_KNUX    (SonicMania::Ability)(baseAddress + 0x000C8A70)
+    #define MOVESET_MIGHTY  (SonicMania::Ability)(baseAddress + 0x000C8B70)
+    #define MOVESET_RAY     (SonicMania::Ability)(baseAddress + 0x000C8DF0)
+    #define MOVESET_ERSS    (SonicMania::Ability)(baseAddress + 0x000C2340) // Egg Reverie Super Sonic
 
     #define PLAYERID1 0
     #define PLAYERID2 1
     #define PLAYERID3 2
     #define PLAYERID4 3
 
-    #define SUPERSTATE_NOTACTIVE 0
-    #define SUPERSTATE_ACTIVATE 1
-    #define SUPERSTATE_ACTIVE 2
-
-    // Move Sets
-    #define MOVESET_NONE    (Ability)(baseAddress + 0x00000000)
-    #define MOVESET_SONIC   (Ability)(baseAddress + 0x000C8630)
-    #define MOVESET_TAILS   (Ability)(baseAddress + 0x000C8990)
-    #define MOVESET_KNUX    (Ability)(baseAddress + 0x000C8A70)
-    #define MOVESET_MIGHTY  (Ability)(baseAddress + 0x000C8B70)
-    #define MOVESET_RAY     (Ability)(baseAddress + 0x000C8DF0)
-    #define MOVESET_ERSS    (Ability)(baseAddress + 0x000C2340) // Egg Reverie Super Sonic
 #pragma endregion
 
 #pragma region Structs
@@ -885,7 +882,7 @@ namespace SonicMania
         /* 0x00000190 */ DWORD dword190;
         /* 0x00000194 */ BYTE gap194[8];
         /* 0x0000019C */ DWORD dword19C;
-        /* 0x000001A0 */ InputStatuses InputStatus;
+        /* 0x000001A0 */ InputStatus InputStatus;
         /* 0x000001A4 */ int ControllerID;
         /* 0x000001A8 */ DWORD dword1A8;
         /* 0x000001AC */ ALIGN(4) bool Up;
@@ -921,17 +918,7 @@ namespace SonicMania
         {
             KillFlag = 1;
         }
-
-        InputStatuses GetInputStatusOffset()
-        {
-            return (InputStatuses)(InputStatus - baseAddress);
-        }
-
-        void SetInputStatus(InputStatuses status)
-        {
-            InputStatus = (InputStatuses)(status + baseAddress);
-        }
-
+        
         Controller& GetController()
         {
             if (ControllerID < 0 && ControllerID > 4)
