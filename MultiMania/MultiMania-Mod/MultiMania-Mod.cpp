@@ -7,10 +7,13 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <chrono>
 #include "MultiMania.h"
 #include "MultiManiaMenu.h"
 
 using namespace SonicMania;
+using namespace std::chrono;
+using namespace std::chrono_literals;
 
 DefineMultiManiaFunc(InitMultiMania, ());
 DefineMultiManiaFunc(MultiMania_Connect, (const char* connectionCode, int PPS));
@@ -18,7 +21,10 @@ DefineMultiManiaFunc(MultiMania_Close, ());
 DefineMultiManiaFunc(MultiMania_Host, (int PPS));
 DefineMultiManiaFunc(MultiMania_Update, ());
 DefineMultiManiaFunc(MultiMania_IsHost, ());
+DefineMultiManiaFunc(MultiMania_IsConnected, ());
 DefineMultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
+
+#define GetTime duration_cast<milliseconds>(system_clock::now().time_since_epoch())
 extern "C"
 {
 
@@ -31,6 +37,7 @@ extern "C"
     static BYTE LastPacket_old[25];
     static BYTE LastPacket[25];
     static bool Processed = true;
+    static milliseconds Time = GetTime;
 
     // TODO: Write comment on how these offsets are made
     __declspec(dllexport) void MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID)
@@ -61,7 +68,10 @@ extern "C"
 
     __declspec(dllexport) void OpenMenu()
     {
-        DevMenu_Address = MultiManiaMenu;
+        if (MultiMania_IsConnected())
+            DevMenu_Address = MultiManiaMenu_Connected;
+        else
+            DevMenu_Address = MultiManiaMenu;
         memset(MultiMania_Code, 0, 6);
         MultiMania_CodePosition = 6;
         *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
@@ -162,82 +172,6 @@ extern "C"
         }
     }
 
-    __declspec(dllexport) void MultiMania_Mod_WritePlayerData_Process_old(BYTE slot, BYTE* data)
-    {
-        auto &player = *(EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * slot);
-        int counter = 0;
-
-        // Bits
-        BYTE value = data[counter++];
-        player.Up           = (bool)((value >> 0) & 1);
-        player.Down         = (bool)((value >> 1) & 1);
-        player.Left         = (bool)((value >> 2) & 1);
-        player.Right        = (bool)((value >> 3) & 1);
-        player.Jump         = (bool)((value >> 5) & 1);
-        player.IsFacingLeft = (bool)((value >> 6) & 1);
-        //player.KillFlag   = (bool)((value >> 7) & 1);
-
-        //player.Jump = 1;
-
-        player.InputStatus = InputStatus_None;
-
-        bool b = (bool)((value >> 4) & 1);
-        if (!StillPressed2 && b)
-        {
-            KillPlayer2 = true;
-            StillPressed2 = true;
-        }
-
-        if (StillPressed2 && !b)
-            StillPressed2 = false;
-
-        //bool a = (bool)((value >> 5) & 1);
-        //
-        //if (a && !StillPressed3)
-        //{
-        //    StillPressed3 = true;
-        //    player.Jump = true;
-        //}
-        //else
-        //    player.Jump = false;
-        //
-        //if (StillPressed3 && !a)
-        //    StillPressed3 = false;
-
-        if (player.Animation.AnimationID != 19 && player.Animation.AnimationID != 20)
-        {
-            short x = *(short*)(data + counter); counter += 2;
-            short y = *(short*)(data + counter); counter += 2;
-            if (x == 0 && y == 0)
-            {
-                player.LifeCount = 3;
-            }
-            else
-            {
-                player.Position.X = x;
-                player.Position.Y = y;
-            }
-        }
-        else
-        {
-            counter += 4;
-        }
-        player.LifeCount = (int)data[counter++]; 
-        player.RingCount = *(short*)data + counter; counter += 2;
-        player.AirLeft = 0;
-
-        if (player.Animation.AnimationID != 19 && player.Animation.AnimationID != 20)
-        {
-            player.GroundSpeed = *(int*)(data + counter); counter += 4;
-            player.XSpeed = *(int*)(data + counter); counter += 4;
-            player.YSpeed = *(int*)(data + counter); counter += 4;
-
-            int levelTimer = *(int*)(data + counter); counter += 2;
-
-            player.Shield = (ShieldType)data[counter++];
-        }
-    }
-
     __declspec(dllexport) void MultiMania_Mod_ReadPlayerData(BYTE slot, BYTE* data)
     {
         auto &player = *(EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * slot);
@@ -258,54 +192,22 @@ extern "C"
         }
     }
 
-    __declspec(dllexport) void MultiMania_Mod_ReadPlayerData_old(BYTE slot, BYTE* data)
-    {
-        auto &player = *(EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * slot);
-        int counter = 0;
-
-        // Bits
-        BYTE value = 0;
-        value |= (BYTE)((player.Up << 0));
-        value |= (BYTE)((player.Down << 1));
-        value |= (BYTE)((player.Left << 2));
-        value |= (BYTE)((player.Right << 3));
-        value |= (BYTE)((player.Jump << 5));
-        value |= (BYTE)((player.IsFacingLeft << 6));
-        value |= (BYTE)((((
-            player.Animation.AnimationID == 19 ||
-            player.Animation.AnimationID == 20
-            ) ? 1 : 0) & 0x01) << 4);
-        data[counter++] = value;
-
-        *(short*)(data + counter) = player.Position.X; counter += 2;
-        *(short*)(data + counter) = player.Position.Y; counter += 2;
-        *(BYTE*)(data + counter) = player.LifeCount; counter += 1;
-        *(short*)(data + counter) = player.RingCount; counter += 2;
-        *(int*)(data + counter) = player.GroundSpeed; counter += 4;
-        *(int*)(data + counter) = player.XSpeed; counter += 4;
-        *(int*)(data + counter) = player.YSpeed; counter += 4;
-        *(int*)(data + counter) = 0; counter += 4;
-        *(BYTE*)(data + counter) = player.Shield; counter += 1;
-    }
-
-
-    bool test = false;
     __declspec(dllexport) void OnFrame()
     {
-        test = !test;
         if (PlayerControllers[0].Down.Down && PlayerControllers[0].Up.Press && (GameState & GameState_DevMenu) != GameState_DevMenu)
             OpenMenu();
-        //if (!test)
+        if (MultiMania_IsConnected)
         {
-            MultiMania_Update();
-            if (!Processed && LastPacket)
+            if ((GetTime - Time) > (milliseconds)(long long)((float)1000.0f / MultiMania_PPS))
             {
-                MultiMania_Mod_WritePlayerData_Process(1, LastPacket, MultiMania_IsHost());
-                //MultiMania_Mod_WritePlayerData_Process(1, LastPacket);
-                Processed = false;
+                Time = GetTime;
+                
+                MultiMania_Update();
             }
+
+            if (LastPacket)
+                MultiMania_Mod_WritePlayerData_Process(1, LastPacket, MultiMania_IsHost());
         }
-        //MultiMania_Mod_WritePlayerData_Process_old(1, LastPacket);
     }
 
     Entity* SpawnObject_r(short objectID, short subObject, DWORD x, DWORD y)

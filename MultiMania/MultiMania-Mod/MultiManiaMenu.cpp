@@ -14,11 +14,12 @@ using std::string;
 
 int MultiMania_Code[6];
 int MultiMania_CodePosition;
-int MultiMania_PPS;
+int MultiMania_PPS = 30;
 
 static int ConnectionTimer = 0;
 
 char MultiManiaMenu_ConnectionError_TIMEOUT();
+char MultiManiaMenu_Host_MMSERVER();
 
 DataPointer(BYTE, Controller_A, 0x0044170C);
 DataPointer(BYTE, Key_Enter, 0x00441754);
@@ -71,14 +72,16 @@ char MultiManiaMenu()
         buf[0] = '0' + MultiMania_Code[i];
         DevMenu_DrawText(centerX + 43 + (i * 8), buf, YPosition, 0, i == MultiMania_CodePosition ? 0x00FF0000 : 0x00000000);
     }
-    DevMenu_DrawText(centerX + 27, "MM", YPosition, 0, 0x000000);
-    YPosition += 12;
+    DevMenu_DrawText(centerX + 27, "MM", YPosition, 0, 0x000000);               YPosition += 12;
     DevMenu_DrawText(centerX - 116, "Packets Per Secs.", YPosition, 0, optionColours[1]);
-
-    DevMenu_DrawText(centerX  + 80, "<30>", YPosition, 0, 0xF0F07D);
-    YPosition += 24;
-    DevMenu_DrawText(centerX, "Connect", YPosition, 1, optionColours[2]);
-    YPosition += 12;
+    
+    string s = "<";
+    s += std::to_string(MultiMania_PPS);
+    s += ">";
+    
+    DevMenu_DrawText(centerX + 76, s.c_str(), YPosition, 2, 0xF0F07D);          YPosition += 12;
+                                                                                YPosition += 12;
+    DevMenu_DrawText(centerX, "Connect", YPosition, 1, optionColours[2]);       YPosition += 12;
     DevMenu_DrawText(centerX, "Host Game", YPosition, 1, optionColours[3]);
     
     bool left = PlayerControllers[0].Left.Down;
@@ -149,6 +152,16 @@ char MultiManiaMenu()
             }
             else if (DevMenu_Option == 1)
             {
+                if (left)
+                {
+                    if (MultiMania_PPS > 1)
+                        --MultiMania_PPS;
+                }
+                else
+                {
+                    if (MultiMania_PPS < 120)
+                        ++MultiMania_PPS;
+                }
             }
         }
         result = (dword_6F0AE4 + 1) & 7;
@@ -199,14 +212,16 @@ char MultiManiaMenu()
                 for (int i = 0; i < 6; ++i)
                     connectioncode[2 + i] = '0' + MultiMania_Code[i];
                 connectioncode[8] = NULL;
+                DevMenu_Address = MultiManiaMenu_Host_MMSERVER;
                 if (!MultiMania_Connect(connectioncode, MultiMania_PPS))
                 {
                     // Failed
                 }
                 break;
             case 3:
+                DevMenu_Address = MultiManiaMenu_Host_MMSERVER;
                 MultiMania_Host(MultiMania_PPS);
-                //GameState = (GameStates)(GameState & ~GameState_DevMenu);
+                //GameState = *(GameStates*)(baseAddress + 0x002FBB54);
                 break;
             default:
                 break;
@@ -270,14 +285,13 @@ char MultiManiaMenu_Host_MMSERVER()
     int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
 
-    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00000080, 255, 0, 1);
+    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00004080, 255, 0, 1);
     DevMenu_DrawText(centerX, "Connecting to MultiMania Server...", centerY - 4, 1, 0xF0F0F0);
 
     result = Key_Enter | Controller_A;
     dword_6F0AE4 = 0;
     return result;
 }
-
 
 char MultiManiaMenu_ConnectionError_INVALIDCC()
 {
@@ -316,3 +330,103 @@ char MultiManiaMenu_ConnectionError_TIMEOUT()
     }
     return result;
 }
+
+char MultiManiaMenu_Connected()
+{
+    char result;
+
+    // Centre of the Screen
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+    int YPosition = centerY - 84;
+
+    //DevMenu_DrawRect(0, 0, centerX * 2, centerY * 2, 0x000000, 255, 0, 1);
+    // Title
+    DevMenu_DrawRect(centerX - 128, centerY - 84, 256, 48, 0x00000080, 255, 0, 1);
+    YPosition += 6;
+    DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, 1, 0xF0F0F0);
+    YPosition += 14;
+    DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
+    YPosition += 14;
+    //DevMenu_DrawText(centerX - 124, "Connected", YPosition, 0, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "U:0 D:0 S:0 R:0 L:0 A: 0", YPosition, 1, 0xF0F0F0);
+    YPosition += 40;
+
+    // Bottom Panel
+    DevMenu_DrawRect(centerX - 128, YPosition - 8, 256, 72, 0x00000080, 255, 0, 1);
+
+
+    int count = 3;
+    int optionColours[4];
+    for (int i = 0; i < count; ++i)
+        optionColours[i] = 0x808090;
+    optionColours[DevMenu_Option - DevMenu_Scroll] = 0xF0F0F0;
+
+
+
+    DevMenu_DrawText(centerX, "Change Stage", YPosition, 1, optionColours[0]);      YPosition += 12;
+    DevMenu_DrawText(centerX, "Change Character", YPosition, 1, optionColours[1]);  YPosition += 12;
+                                                                                    YPosition += 12;
+                                                                                    YPosition += 12;
+    DevMenu_DrawText(centerX, "Disconnect", YPosition, 1, optionColours[2]);        YPosition += 12;
+
+    bool left = PlayerControllers[0].Left.Down;
+    if (Key_Up)
+    {
+        if (!dword_6F0AE4)
+        {
+            --DevMenu_Option;
+            if (DevMenu_Option < 0)
+            {
+                DevMenu_Option = count - 1;
+                if (DevMenu_Option >= 18)
+                    DevMenu_Scroll = DevMenu_Option - 18;
+                else
+                    DevMenu_Scroll = 0;
+            }
+        }
+        result = (dword_6F0AE4 + 1) & 7;
+        dword_6F0AE4 = result;
+    }
+    else if (Key_Down)
+    {
+        if (!dword_6F0AE4)
+        {
+            ++DevMenu_Option;
+            if ((DevMenu_Option - DevMenu_Scroll) > 18)
+                ++DevMenu_Scroll;
+            if (DevMenu_Option > count - 1)
+                DevMenu_Option = 0;
+        }
+        result = (dword_6F0AE4 + 1) & 7;
+        dword_6F0AE4 = result;
+    }
+    else
+    {
+        result = Key_Enter | Controller_A;
+        dword_6F0AE4 = 0;
+        if ((Key_Enter | Controller_A) == 1)
+        {
+            switch (DevMenu_Option)
+            {
+            case 0: // Change Stage
+                break;
+            case 1: // Change Character
+                break;
+            case 2: // Reserved
+                break;
+            case 3: // Reserved
+                break;
+            case 4: // Disconnect
+                // TODO: Actually make MultiMania-Mod able to disconnect
+                //MultiMania_Disconnect();
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    return result;
+}
+

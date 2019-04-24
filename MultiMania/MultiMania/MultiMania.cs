@@ -34,6 +34,11 @@ namespace MultiMania
             return MultiManiaConnectionHandler.Connection.Hosting;
         }
 
+        [DllExport(CallingConvention.Cdecl)]
+        public static bool MultiMania_IsConnected()
+        {
+            return MultiManiaConnectionHandler.Connection.Connected;
+        }
 
         [DllExport(CallingConvention.Cdecl)]
         public static bool MultiMania_Host(int PPS)

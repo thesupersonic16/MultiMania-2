@@ -13,6 +13,7 @@ MultiManiaFunc(MultiMania_Close, ());
 MultiManiaFunc(MultiMania_Host, (int PPS));
 MultiManiaFunc(MultiMania_Update, ());
 MultiManiaFunc(MultiMania_IsHost, ());
+MultiManiaFunc(MultiMania_IsConnected, ());
 MultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
 
 static void LoadExports()
@@ -23,5 +24,6 @@ static void LoadExports()
     LoadMultiManiaFunc(MultiMania_Host);
     LoadMultiManiaFunc(MultiMania_Update);
     LoadMultiManiaFunc(MultiMania_IsHost);
+    LoadMultiManiaFunc(MultiMania_IsConnected);
     LoadMultiManiaFunc(MultiMania_SpawnObject);
 }
