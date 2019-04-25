@@ -20,12 +20,20 @@ static int ConnectionTimer = 0;
 
 char MultiManiaMenu_ConnectionError_TIMEOUT();
 char MultiManiaMenu_Host_MMSERVER();
+char MultiManiaMenu_ChangeChar();
 
 DataPointer(BYTE, Controller_A, 0x0044170C);
 DataPointer(BYTE, Key_Enter, 0x00441754);
 DataPointer(BYTE, Key_Up, 0x004416D8);
 DataPointer(BYTE, Key_Down, 0x004416E4);
 DataPointer(DWORD, dword_6F0AE4, 0x002FBB4C);
+
+#define DEBUG(str) \
+string s = "DEBUG: "; \
+s += str; \
+DevMenu_DrawRect(0, centerY - 16 + centerY / 2 + centerY / 4, centerX * 2, 32, 0x00004080, 255, 0, 1); \
+DevMenu_DrawText(centerX, s.c_str(), centerY - 4 + centerY / 2 + centerY / 4, 1, 0xF0F0F0); 
+
 
 char MultiManiaMenu()
 {
@@ -45,7 +53,7 @@ char MultiManiaMenu()
     YPosition += 14;
     DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
     YPosition += 14;
-    //DevMenu_DrawText(centerX, "", YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "Not Connected", YPosition, 1, 0xF0F0F0);
     YPosition += 40;
 
     // Bottom Panel
@@ -274,6 +282,10 @@ char MultiManiaMenu_Host_Code()
     DevMenu_DrawText(centerX, (string("Connection Code: ") + buf).c_str(), centerY - 4, 1, 0xF0F0F0);
 
     result = Key_Enter | Controller_A;
+    if ((Key_Enter | Controller_A) == 1)
+    {
+        GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+    }
     dword_6F0AE4 = 0;
     return result;
 }
@@ -350,7 +362,14 @@ char MultiManiaMenu_Connected()
     DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
     YPosition += 14;
     //DevMenu_DrawText(centerX - 124, "Connected", YPosition, 0, 0xF0F0F0);
-    DevMenu_DrawText(centerX, "U:0 D:0 S:0 R:0 L:0 A: 0", YPosition, 1, 0xF0F0F0);
+    
+    char buff[128];
+    memset(buff, 0, 128);
+    NetworkInfo info;
+    MultiMania_GetNetworkInfo(&info);
+    sprintf_s(buff, 128, "U:%d D:%d S:%d R:%d L:%d", info.UpBytesTotal, info.DownBytesTotal, info.UpPacketsTotal, info.DownPacketsTotal, info.LostPacketsTotal);
+
+    DevMenu_DrawText(centerX, buff, YPosition, 1, 0xF0F0F0);
     YPosition += 40;
 
     // Bottom Panel
@@ -371,7 +390,6 @@ char MultiManiaMenu_Connected()
                                                                                     YPosition += 12;
     DevMenu_DrawText(centerX, "Disconnect", YPosition, 1, optionColours[2]);        YPosition += 12;
 
-    bool left = PlayerControllers[0].Left.Down;
     if (Key_Up)
     {
         if (!dword_6F0AE4)
@@ -413,14 +431,20 @@ char MultiManiaMenu_Connected()
             case 0: // Change Stage
                 break;
             case 1: // Change Character
+                DevMenu_Address = MultiManiaMenu_ChangeChar;
+                DevMenu_Option = 0;
+                DevMenu_Scroll = 0;
                 break;
-            case 2: // Reserved
-                break;
-            case 3: // Reserved
-                break;
-            case 4: // Disconnect
+            //case 2: // Reserved
+            //    break;
+            //case 3: // Reserved
+            //    break;
+            case 2: // Disconnect
                 // TODO: Actually make MultiMania-Mod able to disconnect
                 //MultiMania_Disconnect();
+                // Nevermind We did have a disconnect function
+                MultiMania_Close();
+                GameState = *(GameStates*)(baseAddress + 0x002FBB54);
                 break;
             default:
                 break;
@@ -429,4 +453,129 @@ char MultiManiaMenu_Connected()
     }
     return result;
 }
+
+char MultiManiaMenu_ChangeChar()
+{
+    char result;
+
+    // Centre of the Screen
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+    int YPosition = centerY - 84;
+
+    //DevMenu_DrawRect(0, 0, centerX * 2, centerY * 2, 0x000000, 255, 0, 1);
+    // Title
+    DevMenu_DrawRect(centerX - 128, centerY - 84, 256, 48, 0x00000080, 255, 0, 1);
+    YPosition += 6;
+    DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, 1, 0xF0F0F0);
+    YPosition += 14;
+    DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
+    YPosition += 14;
+    NetworkInfo info;
+    if (MultiMania_GetNetworkInfo(&info))
+    {
+        char buff[128];
+        memset(buff, 0, 128);
+        sprintf_s(buff, 128, "U:%d D:%d S:%d R:%d L:%d", info.UpBytesTotal, info.DownBytesTotal, info.UpPacketsTotal, info.DownPacketsTotal, info.LostPacketsTotal);
+
+        DevMenu_DrawText(centerX, buff, YPosition, 1, 0xF0F0F0);
+    }
+    else
+    {
+        DevMenu_DrawText(centerX, "Not Connected", YPosition, 1, 0xF0F0F0);
+    }
+    YPosition += 40;
+
+    // Bottom Panel
+    DevMenu_DrawRect(centerX - 128, YPosition - 8, 256, 72, 0x00000080, 255, 0, 1);
+
+    int optionColours[6];
+    for (int i = 0; i < 6; ++i)
+        optionColours[i] = 0x808090;
+
+    // Give selected Option a lighter colour
+    if ((DevMenu_Option - DevMenu_Scroll) < 0)
+        DevMenu_Scroll = 0;
+    optionColours[DevMenu_Option - DevMenu_Scroll] = 0xF0F0F0;
+    YPosition -= 10;
+    const char* CharOptions[6]
+    {
+        "Sonic", "Tails", "Knuckles", "Mighty", "Ray", "Back"
+    };
+    for (int i = DevMenu_Scroll; i < 7; ++i)
+    {
+        YPosition += 10;
+        if ((i - DevMenu_Scroll) > 5)
+            break;
+        DevMenu_DrawText(centerX, CharOptions[i], YPosition, 1, optionColours[i - DevMenu_Scroll]);
+    }
+
+    if (Key_Up)
+    {
+        if (!dword_6F0AE4)
+        {
+            --DevMenu_Option;
+            if (DevMenu_Option < 0)
+            {
+                DevMenu_Option = 5;
+                DevMenu_Scroll = DevMenu_Option - 5;
+            }
+        }
+        result = (dword_6F0AE4 + 1) & 7;
+        dword_6F0AE4 = result;
+    }
+    else if (Key_Down)
+    {
+        if (!dword_6F0AE4)
+        {
+            ++DevMenu_Option;
+            if ((DevMenu_Option - DevMenu_Scroll) > 5)
+                ++DevMenu_Scroll;
+            if (DevMenu_Option > 5)
+                DevMenu_Option = 0;
+        }
+        result = (dword_6F0AE4 + 1) & 7;
+        dword_6F0AE4 = result;
+    }
+    else
+    {
+        result = Key_Enter | Controller_A;
+        dword_6F0AE4 = 0;
+        if ((Key_Enter | Controller_A) == 1)
+        {
+            switch (DevMenu_Option)
+            {
+            case 5:
+                DevMenu_Address = MultiManiaMenu_Connected;
+                DevMenu_Option = 1;
+                DevMenu_Scroll = 0;
+                break;
+            default:
+                try
+                {
+                    *GetAddress((baseAddress + 0x00AA763C), 4) = 1 << DevMenu_Option;
+                    DEBUG(std::to_string(*GetAddress((baseAddress + 0x00AA763C), 4)));
+                    DevMenu_Address = MultiManiaMenu_Connected;
+                    DevMenu_Option = 1;
+                    DevMenu_Scroll = 0;
+                }
+                catch (...)
+                {
+                }
+            }
+        }
+    }
+    return result;
+}
+
+
+
+
+
+
+
+
+
+
 

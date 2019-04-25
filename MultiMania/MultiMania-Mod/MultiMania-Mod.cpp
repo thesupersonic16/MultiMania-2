@@ -21,7 +21,7 @@ DefineMultiManiaFunc(MultiMania_Close, ());
 DefineMultiManiaFunc(MultiMania_Host, (int PPS));
 DefineMultiManiaFunc(MultiMania_Update, ());
 DefineMultiManiaFunc(MultiMania_IsHost, ());
-DefineMultiManiaFunc(MultiMania_IsConnected, ());
+DefineMultiManiaFunc(MultiMania_GetNetworkInfo, (NetworkInfo* networkInfo));
 DefineMultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
 
 #define GetTime duration_cast<milliseconds>(system_clock::now().time_since_epoch())
@@ -68,7 +68,7 @@ extern "C"
 
     __declspec(dllexport) void OpenMenu()
     {
-        if (MultiMania_IsConnected())
+        if (MultiMania_GetNetworkInfo(nullptr))
             DevMenu_Address = MultiManiaMenu_Connected;
         else
             DevMenu_Address = MultiManiaMenu;
@@ -196,7 +196,7 @@ extern "C"
     {
         if (PlayerControllers[0].Down.Down && PlayerControllers[0].Up.Press && (GameState & GameState_DevMenu) != GameState_DevMenu)
             OpenMenu();
-        if (MultiMania_IsConnected)
+        if (MultiMania_GetNetworkInfo(nullptr))
         {
             if ((GetTime - Time) > (milliseconds)(long long)((float)1000.0f / MultiMania_PPS))
             {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -14,10 +15,22 @@ namespace MultiMania
 
         public static int Timer = 0;
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct NetworkInfo
+        {
+            public bool Connected;
+            public int UpBytesTotal;
+            public int DownBytesTotal;
+            public int UpPacketsTotal;
+            public int DownPacketsTotal;
+            public int LostPacketsTotal;
+        }
+
+
         [DllExport(CallingConvention.Cdecl)]
         public static bool MultiMania_Connect(string connectionCode, int PPS)
         {
-            MultiManiaConnectionHandler.Connect(connectionCode);
+            new Thread(() => MultiManiaConnectionHandler.Connect(connectionCode)).Start();
             return true;
         }
 
@@ -35,15 +48,28 @@ namespace MultiMania
         }
 
         [DllExport(CallingConvention.Cdecl)]
-        public static bool MultiMania_IsConnected()
+        public static bool MultiMania_GetNetworkInfo(IntPtr ptr)
         {
+            if (ptr != IntPtr.Zero)
+            {
+                unsafe
+                {
+                    var info = (NetworkInfo*)ptr;
+                    info->Connected = MultiManiaConnectionHandler.Connection.Connected;
+                    info->UpBytesTotal = MultiManiaConnectionHandler.Connection.UpBytesTotal;
+                    info->DownBytesTotal = MultiManiaConnectionHandler.Connection.DownBytesTotal;
+                    info->UpPacketsTotal = MultiManiaConnectionHandler.Connection.UpPacketsTotal;
+                    info->DownPacketsTotal = MultiManiaConnectionHandler.Connection.DownPacketsTotal;
+                    info->LostPacketsTotal = MultiManiaConnectionHandler.Connection.LostPacketsTotal;
+                }
+            }
             return MultiManiaConnectionHandler.Connection.Connected;
         }
 
         [DllExport(CallingConvention.Cdecl)]
         public static bool MultiMania_Host(int PPS)
         {
-            MultiManiaConnectionHandler.Host(PPS);
+            new Thread(() => MultiManiaConnectionHandler.Host(PPS)).Start();
             return true;
         }
 
@@ -58,19 +84,7 @@ namespace MultiMania
             MultiManiaConnectionHandler.Connection.SendData(19, data);
             return true;
         }
-
-        [DllExport(CallingConvention.Cdecl)]
-        public static bool MultiMania_ReadResultData(int ringsToAdd, int player, bool playSoundFX)
-        {
-            var data = new byte[9];
-            Array.Copy(BitConverter.GetBytes(ringsToAdd), 0, data, 0, 4);
-            Array.Copy(BitConverter.GetBytes(player), 0, data, 4, 4);
-            Array.Copy(BitConverter.GetBytes(playSoundFX), 0, data, 8, 1);
-            MultiManiaConnectionHandler.Connection.SendData(20, data);
-            return true;
-        }
-
-
+        
         [DllExport(CallingConvention.Cdecl)]
         public static void MultiMania_Update()
         {

@@ -27,6 +27,7 @@ namespace MultiMania
             Connection.CloseConnection();
             // TODO: Write Patches
 
+            Bonk = false;
             Connection.OpenConnection(GetServerAddress(), 16004);
             Connection.Hosting = false;
             Connection.SendData(101, Encoding.ASCII.GetBytes(connectionCode));
@@ -42,6 +43,7 @@ namespace MultiMania
             Connection.CloseConnection();
             // TODO: Write Patches
 
+            Bonk = true;
             Connection.OpenConnection(GetServerAddress(), 16004);
             Connection.Hosting = true;
             Connection.SendCommand(100);
