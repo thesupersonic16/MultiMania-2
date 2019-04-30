@@ -23,6 +23,7 @@ namespace MultiMania
         public int UpPacketsTotal = 0;
         public int DownPacketsTotal = 0;
         public int LostPacketsTotal = 0;
+        public Action OnDisconnect = null;
         protected List<Func<byte[], IPEndPoint, bool>> PacketEventRegistery = new List<Func<byte[], IPEndPoint, bool>>();
 
         public bool OpenConnection(string ipText, string portText)
@@ -178,6 +179,8 @@ namespace MultiMania
         public virtual bool CloseConnection()
         {
             Hosting = false;
+            if (Connected)
+                OnDisconnect?.Invoke();
             try
             {
                 if (Connected)

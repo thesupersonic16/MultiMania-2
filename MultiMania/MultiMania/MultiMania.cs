@@ -110,6 +110,26 @@ namespace MultiMania
 
 
         [DllExport(CallingConvention.Cdecl)]
+        public static bool MultiMania_UpdatePlayer(Character character)
+        {
+            var data = new byte[2];
+            data[0] = 1;
+            data[1] = (byte)character;
+            MultiManiaConnectionHandler.Connection.SendData(0x15, data);
+            return true;
+        }
+
+        [DllExport(CallingConvention.Cdecl)]
+        public static bool MultiMania_UpdateStage(byte stage)
+        {
+            var data = new byte[2];
+            data[0] = stage;
+            MultiManiaConnectionHandler.Connection.SendData(14, data);
+            return true;
+        }
+
+
+        [DllExport(CallingConvention.Cdecl)]
         public static void InitMultiMania()
         {
             //var network = new Network();
@@ -130,30 +150,30 @@ namespace MultiMania
         }
 
 
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern int OpenMenu();
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_ChangeScene(byte scene);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern byte MultiMania_Mod_GetScene();
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_SetCharacter(byte slot, Character character);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern Character MultiMania_Mod_GetCharacter(byte slot);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_SendEvent(int errorcode);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern int MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern int MultiMania_Mod_ReadResultData(int playerID, [In, Out] byte[] data);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_SendHostConnectionCode(string connectionCode);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_WritePlayerData(byte slot, byte[] data);
-        [DllImport("MultiMania-Mod.dll")]
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_ReadPlayerData(byte slot, [In, Out] byte[] data);
-        [DllImport("MultiMania-Mod.dll")]
-        public static extern void MultiMania_Mod_SpawnObject(short objectID, short subObject, int x, int y);
+        [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr MultiMania_Mod_SpawnObject(short objectID, short subObject, uint x, uint y);
 
     }
 }

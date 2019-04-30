@@ -1,5 +1,6 @@
 #pragma once
 #include <ManiaModLoader.h>
+#include <SonicMania.h>
 
 static HMODULE MultiManiaCS;
 #define MultiManiaFunc(name, ARGS) extern int(__cdecl *name)ARGS;
@@ -25,6 +26,8 @@ MultiManiaFunc(MultiMania_Update, ());
 MultiManiaFunc(MultiMania_IsHost, ());
 MultiManiaFunc(MultiMania_GetNetworkInfo, (NetworkInfo* networkInfo));
 MultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
+MultiManiaFunc(MultiMania_UpdatePlayer, (SonicMania::Character character));
+MultiManiaFunc(MultiMania_UpdateStage, (SonicMania::Scene scene));
 
 static void LoadExports()
 {
@@ -36,4 +39,6 @@ static void LoadExports()
     LoadMultiManiaFunc(MultiMania_IsHost);
     LoadMultiManiaFunc(MultiMania_GetNetworkInfo);
     LoadMultiManiaFunc(MultiMania_SpawnObject);
+    LoadMultiManiaFunc(MultiMania_UpdatePlayer);
+    LoadMultiManiaFunc(MultiMania_UpdateStage);
 }

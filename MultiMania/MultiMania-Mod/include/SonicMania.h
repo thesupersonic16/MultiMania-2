@@ -1226,6 +1226,11 @@ namespace SonicMania
     FunctionPointer(int, DevMenu_DrawRect, (int x, int y, signed int width, int height, int color, signed int a6, int a7, int a8), 0x001D8870);
     DataPointer(DWORD, dword_D3CC00, 0x947C6C);
 
+    FunctionPointer(char, Devmenu_MainMenu, (), 0x001C2500);
+    FunctionPointer(char, Devmenu_StageSelect, (), 0x001C2B60);
+    FunctionPointer(char, Devmenu_SceneSelect, (), 0x001C2DB0);
+    FunctionPointer(char, Devmenu_Options, (), 0x001C3090);
+
     static int loc_DrawText = baseAddress + 0x1D58C0;
     static __declspec(naked) WORD DevMenu_DrawText(int XPosition, const char* text, int YPosition, int isCentered, int color)
     {

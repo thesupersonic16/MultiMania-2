@@ -17,8 +17,14 @@ namespace MultiMania
         public static ulong PacketCountRECV = 0;
         public static bool Bonk = false;
 
+        public static void OnDisconnect()
+        {
+            MultiMania.MultiMania_Mod_SendEvent(2);
+        }
+
         public static void Connect(string connectionCode)
         {
+            Connection.OnDisconnect = OnDisconnect;
             // Unregisters all events
             Connection.UnregisterAllPacketEvents();
             // Registers the receive event
@@ -35,6 +41,7 @@ namespace MultiMania
 
         public static void Host(int PPS)
         {
+            Connection.OnDisconnect = OnDisconnect;
             // Unregisters all events
             Connection.UnregisterAllPacketEvents();
             // Registers the receive event
@@ -94,17 +101,13 @@ namespace MultiMania
                 MultiMania.MultiMania_Mod_ChangeScene(data[1]);
             }
             if (data[0] == 14)
-            { // Sync New Level and Character
+            { // Sync New Level
                 byte LevelID = MultiMania.MultiMania_Mod_GetScene();
                 if (LevelID > 8)
                 {
-                    MultiMania.MultiMania_Mod_SetCharacter(0, (MultiMania.Character)data[2]);
-                    MultiMania.MultiMania_Mod_SetCharacter(1, (MultiMania.Character)data[3]);
-                    //MultiMania.MultiMania_Mod_SetCharacter(2, (MultiMania.Character)data[4]);
-                    //MultiMania.MultiMania_Mod_SetCharacter(3, (MultiMania.Character)data[5]);
                     MultiMania.MultiMania_Mod_ChangeScene(data[1]);
                     //Connection.SendData(18, new byte[] { data[1], data[2], data[3], data[4], data[5] });
-                    Connection.SendData(18, new byte[] { data[1], data[2], data[3] });
+                    Connection.SendData(18, new byte[] { data[1] });
                 }
                 else
                 {
@@ -128,10 +131,6 @@ namespace MultiMania
                 byte LevelID = MultiMania.MultiMania_Mod_GetScene();
                 if (LevelID > 8)
                 {
-                    MultiMania.MultiMania_Mod_SetCharacter(0, (MultiMania.Character)data[3]);
-                    MultiMania.MultiMania_Mod_SetCharacter(1, (MultiMania.Character)data[2]);
-                    //MultiMania.MultiMania_Mod_SetCharacter(2, (MultiMania.Character)data[4]);
-                    //MultiMania.MultiMania_Mod_SetCharacter(3, (MultiMania.Character)data[5]);
                     MultiMania.MultiMania_Mod_ChangeScene(data[1]);
                 }
             }
@@ -140,7 +139,7 @@ namespace MultiMania
                 byte LevelID = MultiMania.MultiMania_Mod_GetScene();
                 if (LevelID > 8)
                 {
-                    MultiMania.MultiMania_Mod_SpawnObject(BitConverter.ToInt16(data, 1), BitConverter.ToInt16(data, 3), BitConverter.ToInt32(data, 5), BitConverter.ToInt32(data, 9));
+                    MultiMania.MultiMania_Mod_SpawnObject(BitConverter.ToInt16(data, 1), BitConverter.ToInt16(data, 3), BitConverter.ToUInt32(data, 5), BitConverter.ToUInt32(data, 9));
                 }
             }
             if (data[0] == 20)
@@ -150,6 +149,10 @@ namespace MultiMania
                 {
                     MultiMania.MultiMania_Mod_SetResultData(BitConverter.ToInt32(data, 1), BitConverter.ToInt32(data, 5), BitConverter.ToInt32(data, 9), BitConverter.ToInt32(data, 13), 1);
                 }
+            }
+            if (data[0] == 0x15)
+            { // Update Player
+                MultiMania.MultiMania_Mod_SetCharacter(data[1], (MultiMania.Character)data[2]);
             }
             if (data[0] == 100)
             {

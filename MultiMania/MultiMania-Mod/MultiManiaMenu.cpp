@@ -14,13 +14,9 @@ using std::string;
 
 int MultiMania_Code[6];
 int MultiMania_CodePosition;
-int MultiMania_PPS = 30;
+int MultiMania_PPS = 70;
 
 static int ConnectionTimer = 0;
-
-char MultiManiaMenu_ConnectionError_TIMEOUT();
-char MultiManiaMenu_Host_MMSERVER();
-char MultiManiaMenu_ChangeChar();
 
 DataPointer(BYTE, Controller_A, 0x0044170C);
 DataPointer(BYTE, Key_Enter, 0x00441754);
@@ -324,6 +320,26 @@ char MultiManiaMenu_ConnectionError_INVALIDCC()
     return result;
 }
 
+char MultiManiaMenu_ConnectionWarning_CLOSED()
+{
+    char result;
+
+    int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
+    int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
+
+    DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00805000, 255, 0, 1);
+    DevMenu_DrawText(centerX, "Connection Closed!", centerY - 4, 1, 0xF0F0F0);
+
+    result = Key_Enter | Controller_A;
+    dword_6F0AE4 = 0;
+    if ((Key_Enter | Controller_A) == 1)
+    {
+        GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+    }
+    return result;
+}
+
+
 char MultiManiaMenu_ConnectionError_TIMEOUT()
 {
     char result;
@@ -429,6 +445,9 @@ char MultiManiaMenu_Connected()
             switch (DevMenu_Option)
             {
             case 0: // Change Stage
+                DevMenu_Address = Devmenu_StageSelect;
+                DevMenu_Option = 0;
+                DevMenu_Scroll = 0;
                 break;
             case 1: // Change Character
                 DevMenu_Address = MultiManiaMenu_ChangeChar;
@@ -440,9 +459,6 @@ char MultiManiaMenu_Connected()
             //case 3: // Reserved
             //    break;
             case 2: // Disconnect
-                // TODO: Actually make MultiMania-Mod able to disconnect
-                //MultiMania_Disconnect();
-                // Nevermind We did have a disconnect function
                 MultiMania_Close();
                 GameState = *(GameStates*)(baseAddress + 0x002FBB54);
                 break;
@@ -554,8 +570,11 @@ char MultiManiaMenu_ChangeChar()
             default:
                 try
                 {
-                    *GetAddress((baseAddress + 0x00AA763C), 4) = 1 << DevMenu_Option;
-                    DEBUG(std::to_string(*GetAddress((baseAddress + 0x00AA763C), 4)));
+                    auto character = (Character)(1 << DevMenu_Option);
+                    DEBUG(std::to_string(character));
+                    *GetAddress((baseAddress + 0x00AA763C), 4) = character;
+                    MultiMania_UpdatePlayer(character);
+                    FastChangeCharacter(&Player1, character);
                     DevMenu_Address = MultiManiaMenu_Connected;
                     DevMenu_Option = 1;
                     DevMenu_Scroll = 0;

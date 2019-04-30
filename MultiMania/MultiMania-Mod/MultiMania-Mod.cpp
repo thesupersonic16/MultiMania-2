@@ -23,6 +23,8 @@ DefineMultiManiaFunc(MultiMania_Update, ());
 DefineMultiManiaFunc(MultiMania_IsHost, ());
 DefineMultiManiaFunc(MultiMania_GetNetworkInfo, (NetworkInfo* networkInfo));
 DefineMultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
+DefineMultiManiaFunc(MultiMania_UpdatePlayer, (Character character));
+DefineMultiManiaFunc(MultiMania_UpdateStage, (SonicMania::Scene scene));
 
 #define GetTime duration_cast<milliseconds>(system_clock::now().time_since_epoch())
 extern "C"
@@ -90,6 +92,11 @@ extern "C"
 
     __declspec(dllexport) void MultiMania_Mod_SetCharacter(BYTE slot, Character character)
     {
+        if (*GetCharacter_ptr(slot) != character)
+        {
+            auto player = (EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * slot);
+            FastChangeCharacter(player, character);
+        }
         *GetCharacter_ptr(slot) = character;
     }
 
@@ -115,17 +122,25 @@ extern "C"
             MultiMania_Code[i] = connectionCode[2 + i] - '0';
     }
 
-
+    static const uint8_t restorePlayer2Respawn[] = { 0x0F, 0x8Cu, 0xCEu, 0x00, 0x00, 0x00 };
     __declspec(dllexport) void MultiMania_Mod_SendEvent(int errorcode)
     {
         switch (errorcode)
         {
         case 0:
-            GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+            if (!(GameState | GameState_DevMenu))
+                GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+            WriteJump((void*)(baseAddress + 0xC5449), (void*)(baseAddress + 0xC551D));
             break;
         case 1:
             DevMenu_Address = MultiManiaMenu_ConnectionError_INVALIDCC;
             break;
+        case 2:
+            WriteData((void*)(baseAddress + 0xC5449), restorePlayer2Respawn, 6);
+            DevMenu_Address = MultiManiaMenu_ConnectionWarning_CLOSED;
+            if (!(GameState | GameState_DevMenu))
+                *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
+            GameState = GameState_DevMenu;
         default:
             break;
         }
@@ -152,6 +167,7 @@ extern "C"
             SetSpriteAnimation(player.SpriteIndex, animID, &player.Animation, true, frameID);
             player.InputStatus = InputStatus_None;
             player.Status = PlayerStatus_None;
+            player.SetVelocity(0, 0);
 
             if (x == 0 && y == 0)
             {
@@ -212,14 +228,22 @@ extern "C"
 
     Entity* SpawnObject_r(short objectID, short subObject, DWORD x, DWORD y)
     {
+        printf("spawn\n");
         if (CurrentScene >= Scene_GHZ1)
             MultiMania_SpawnObject(objectID, subObject, x, y);
         return SpawnObject_Internal(objectID, subObject, x, y);
     }
 
-    __declspec(dllexport) void MultiMania_Mod_SpawnObject(short objectID, short subObject, DWORD x, DWORD y)
+    __declspec(dllexport) Entity* MultiMania_Mod_SpawnObject(short objectID, short subObject, DWORD x, DWORD y)
     {
-        SpawnObject_Internal(objectID, subObject, x, y);
+        return SpawnObject_Internal(objectID, subObject, x, y);
+    }
+
+    __declspec(dllexport) void MultiMania_Mod_SyncAndRestart()
+    {
+        if (MultiMania_GetNetworkInfo(nullptr))
+            MultiMania_UpdateStage(CurrentScene);
+        GameState = GameState_NotRunning;
     }
 
     __declspec(dllexport) void Init(const char *path)
@@ -227,10 +251,27 @@ extern "C"
         char buffer[MAX_PATH];
         GetCurrentDirectoryA(MAX_PATH, buffer);
         SetCurrentDirectoryA(path);
+        printf("Loading MultiMania IL... ");
         MultiManiaCS = LoadLibrary("MultiMania.dll");
+        if (!MultiManiaCS)
+        {
+            printf("Failed!\n");
+            DWORD error = GetLastError();
+            LPSTR buffer;
+            size_t size = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr, error, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&buffer, 0, nullptr);
+            std::string message = "MultiMania has ran into a fatal error while loading its IL library, Please make sure MultiMania.dll exists and is updated. Error: " + std::string(buffer, size);
+            LocalFree(buffer);
+            MessageBox(nullptr, message.c_str(), "MultiMania Error", MB_ICONERROR);
+            exit(error);
+        }
+        else
+            printf("Done.\n");
         SetCurrentDirectoryA(buffer);
         LoadExports();
         *(int*)(baseAddress + 0x00AA7768) = (int)SpawnObject_r;
+        WriteData<7>((void*)(baseAddress + 0x1C3064), 0x90);
+        WriteCall((void*)(baseAddress + 0x1C3064), MultiMania_Mod_SyncAndRestart);
     }
 
     __declspec(dllexport) ModInfo ManiaModInfo = { ModLoaderVer, GameVer };
