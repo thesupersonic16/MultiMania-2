@@ -25,7 +25,7 @@ MultiManiaFunc(MultiMania_Host, (int PPS));
 MultiManiaFunc(MultiMania_Update, ());
 MultiManiaFunc(MultiMania_IsHost, ());
 MultiManiaFunc(MultiMania_GetNetworkInfo, (NetworkInfo* networkInfo));
-MultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
+MultiManiaFunc(MultiMania_SendSoundFX, (short SoundFXID, int a2, BYTE a3));
 MultiManiaFunc(MultiMania_UpdatePlayer, (SonicMania::Character character));
 MultiManiaFunc(MultiMania_UpdateStage, (SonicMania::Scene scene));
 
@@ -38,7 +38,7 @@ static void LoadExports()
     LoadMultiManiaFunc(MultiMania_Update);
     LoadMultiManiaFunc(MultiMania_IsHost);
     LoadMultiManiaFunc(MultiMania_GetNetworkInfo);
-    LoadMultiManiaFunc(MultiMania_SpawnObject);
+    LoadMultiManiaFunc(MultiMania_SendSoundFX);
     LoadMultiManiaFunc(MultiMania_UpdatePlayer);
     LoadMultiManiaFunc(MultiMania_UpdateStage);
 }

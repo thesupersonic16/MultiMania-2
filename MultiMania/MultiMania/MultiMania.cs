@@ -74,13 +74,12 @@ namespace MultiMania
         }
 
         [DllExport(CallingConvention.Cdecl)]
-        public static bool MultiMania_SpawnObject(short objectID, short subObject, int x, int y)
+        public static bool MultiMania_SendSoundFX(short SoundFXID, int a2, byte a3)
         {
-            var data = new byte[12];
-            Array.Copy(BitConverter.GetBytes(objectID), 0, data, 0, 2);
-            Array.Copy(BitConverter.GetBytes(subObject), 0, data, 2, 2);
-            Array.Copy(BitConverter.GetBytes(x), 0, data, 4, 4);
-            Array.Copy(BitConverter.GetBytes(y), 0, data, 8, 4);
+            var data = new byte[7];
+            Array.Copy(BitConverter.GetBytes(SoundFXID), 0, data, 0, 2);
+            Array.Copy(BitConverter.GetBytes(a2), 0, data, 2, 4);
+            Array.Copy(BitConverter.GetBytes(a3), 0, data, 6, 1);
             MultiManiaConnectionHandler.Connection.SendData(19, data);
             return true;
         }
@@ -173,7 +172,7 @@ namespace MultiMania
         [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_ReadPlayerData(byte slot, [In, Out] byte[] data);
         [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern IntPtr MultiMania_Mod_SpawnObject(short objectID, short subObject, uint x, uint y);
+        public static extern IntPtr MultiMania_Mod_PlaySoundFX(short SoundFXID, int a2, byte a3);
 
     }
 }

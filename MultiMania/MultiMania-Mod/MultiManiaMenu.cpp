@@ -397,6 +397,8 @@ char MultiManiaMenu_Connected()
     for (int i = 0; i < count; ++i)
         optionColours[i] = 0x808090;
     optionColours[DevMenu_Option - DevMenu_Scroll] = 0xF0F0F0;
+    if ((DevMenu_Option - DevMenu_Scroll) > 3)
+        DevMenu_Option = 0;
 
 
 

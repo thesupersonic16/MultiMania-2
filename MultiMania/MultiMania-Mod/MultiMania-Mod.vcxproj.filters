@@ -44,6 +44,9 @@
     <ClCompile Include="MultiManiaMenu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\mania-mod-loader\ManiaModLoader\Trampoline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

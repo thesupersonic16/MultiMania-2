@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include <ManiaModLoader.h>
+#include <Trampoline.h>
 #include <SonicMania.h>
 #include <string>
 #include <algorithm>
@@ -22,7 +23,7 @@ DefineMultiManiaFunc(MultiMania_Host, (int PPS));
 DefineMultiManiaFunc(MultiMania_Update, ());
 DefineMultiManiaFunc(MultiMania_IsHost, ());
 DefineMultiManiaFunc(MultiMania_GetNetworkInfo, (NetworkInfo* networkInfo));
-DefineMultiManiaFunc(MultiMania_SpawnObject, (short objectID, short subObject, DWORD x, DWORD y));
+DefineMultiManiaFunc(MultiMania_SendSoundFX, (short SoundFXID, int a2, BYTE a3));
 DefineMultiManiaFunc(MultiMania_UpdatePlayer, (Character character));
 DefineMultiManiaFunc(MultiMania_UpdateStage, (SonicMania::Scene scene));
 
@@ -40,6 +41,8 @@ extern "C"
     static BYTE LastPacket[25];
     static bool Processed = true;
     static milliseconds Time = GetTime;
+    static Character Player2Character = Character_None;
+    Trampoline *SoundFXTrampo;
 
     // TODO: Write comment on how these offsets are made
     __declspec(dllexport) void MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID)
@@ -98,6 +101,7 @@ extern "C"
             FastChangeCharacter(player, character);
         }
         *GetCharacter_ptr(slot) = character;
+        Player2Character = character;
     }
 
     __declspec(dllexport) Character MultiMania_Mod_GetCharacter(BYTE slot)
@@ -128,8 +132,7 @@ extern "C"
         switch (errorcode)
         {
         case 0:
-            if (!(GameState | GameState_DevMenu))
-                GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+            GameState = *(GameStates*)(baseAddress + 0x002FBB54);
             WriteJump((void*)(baseAddress + 0xC5449), (void*)(baseAddress + 0xC551D));
             break;
         case 1:
@@ -185,6 +188,13 @@ extern "C"
             player.Shield = (ShieldType)data[counter++];
             player.IsFacingLeft = data[counter++];
             player.Angle = *(int*)(data + counter); counter += 4;
+
+            if (Player2Character)
+            {
+                if (*GetCharacter_ptr(slot) != Player2Character)
+                    FastChangeCharacter(&player, Player2Character);
+                *GetCharacter_ptr(slot) = Player2Character;
+            }
         }
     }
 
@@ -226,18 +236,41 @@ extern "C"
         }
     }
 
-    Entity* SpawnObject_r(short objectID, short subObject, DWORD x, DWORD y)
+    __declspec(dllexport) int MultiMania_Mod_PlaySoundFX(short SoundFXID, int a2, BYTE a3)
     {
-        printf("spawn\n");
-        if (CurrentScene >= Scene_GHZ1)
-            MultiMania_SpawnObject(objectID, subObject, x, y);
-        return SpawnObject_Internal(objectID, subObject, x, y);
+        auto orig = (decltype(MultiMania_Mod_PlaySoundFX)*)SoundFXTrampo->Target();
+        return orig(SoundFXID, a2, a3);
     }
 
-    __declspec(dllexport) Entity* MultiMania_Mod_SpawnObject(short objectID, short subObject, DWORD x, DWORD y)
+    __declspec(dllexport) int MultiMania_Mod_PlaySoundFX_r(short SoundFXID, int a2, BYTE a3)
     {
-        return SpawnObject_Internal(objectID, subObject, x, y);
+        printf("playing SoundFX: %d\n", SoundFXID);
+        if (SoundFXID == 0 || // Jump
+            SoundFXID == 5 || // Break
+            SoundFXID == 11 ||
+            SoundFXID == 12 ||
+            SoundFXID == 13 ||
+            SoundFXID == 15 ||
+            SoundFXID == 18 ||
+            SoundFXID == 23 || // Knuckles Drop
+            SoundFXID == 30 ||
+            SoundFXID == 37 ||
+            SoundFXID == 38 ||
+            SoundFXID == 62 ||
+            SoundFXID == 63 ||
+            SoundFXID == 65 ||
+            SoundFXID == 66 ||
+            SoundFXID == 68 ||
+            SoundFXID == 69 ||
+            SoundFXID == 73 ||
+            SoundFXID == 85)
+        {
+            MultiMania_SendSoundFX(SoundFXID, a2, a3);
+        }
+        auto orig = (decltype(MultiMania_Mod_PlaySoundFX_r)*)SoundFXTrampo->Target();
+        return orig(SoundFXID, a2, a3);
     }
+
 
     __declspec(dllexport) void MultiMania_Mod_SyncAndRestart()
     {
@@ -269,9 +302,9 @@ extern "C"
             printf("Done.\n");
         SetCurrentDirectoryA(buffer);
         LoadExports();
-        *(int*)(baseAddress + 0x00AA7768) = (int)SpawnObject_r;
         WriteData<7>((void*)(baseAddress + 0x1C3064), 0x90);
         WriteCall((void*)(baseAddress + 0x1C3064), MultiMania_Mod_SyncAndRestart);
+        SoundFXTrampo = new Trampoline((baseAddress + 0x001BC390), (baseAddress + 0x001BC396), MultiMania_Mod_PlaySoundFX_r);
     }
 
     __declspec(dllexport) ModInfo ManiaModInfo = { ModLoaderVer, GameVer };

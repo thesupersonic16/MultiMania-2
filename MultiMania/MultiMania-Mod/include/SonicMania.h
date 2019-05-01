@@ -719,7 +719,7 @@ namespace SonicMania
     // Audio
     FastcallFunctionPointer(void, SetupMusic, (int slot, const char* filePath, int loopStart), 0x00002AD0);
     FunctionPointer(int, PlayMusic, (const char* filePath, int slot, int a3, int loopstart, bool loop), 0x001BC640);
-    FunctionPointer(int, PlaySoundFX, (short SoundFXID, signed int a2, unsigned __int8 a3), 0x001BC390);
+    FunctionPointer(int, PlaySoundFX_, (short SoundFXID, signed int a2, unsigned __int8 a3), 0x001BC390);
     FunctionPointer(short, GetSoundFXID, (const char *path), 0x001BC2F0);
     FunctionPointer(void, ChangeMusicSpeed, (int slot, float volume, float Channelbalance, float PlaybackSpeed), 0x001BC830);
     
@@ -1164,7 +1164,7 @@ namespace SonicMania
     
     inline int PlaySoundFXS(const char *path)
     {
-        return PlaySoundFX(GetSoundFXID(path), 0, 0xFF);
+        return PlaySoundFX_(GetSoundFXID(path), 0, 0xFF);
     }
 
     static int loc_LoadSoundFX = baseAddress + 0x001BBA00;

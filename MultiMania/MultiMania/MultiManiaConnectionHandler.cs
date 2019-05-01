@@ -135,11 +135,11 @@ namespace MultiMania
                 }
             }
             if (data[0] == 19)
-            { // Spawn Object, Doesn't work
+            { // SoundFX
                 byte LevelID = MultiMania.MultiMania_Mod_GetScene();
                 if (LevelID > 8)
                 {
-                    MultiMania.MultiMania_Mod_SpawnObject(BitConverter.ToInt16(data, 1), BitConverter.ToInt16(data, 3), BitConverter.ToUInt32(data, 5), BitConverter.ToUInt32(data, 9));
+                    MultiMania.MultiMania_Mod_PlaySoundFX(BitConverter.ToInt16(data, 1), BitConverter.ToInt32(data, 3), data[7]);
                 }
             }
             if (data[0] == 20)
