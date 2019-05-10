@@ -7,6 +7,7 @@ extern char MultiManiaMenu_ConnectionError_TIMEOUT();
 extern char MultiManiaMenu_Host_MMSERVER();
 extern char MultiManiaMenu_ChangeChar();
 extern char MultiManiaMenu_ConnectionWarning_CLOSED();
+extern void MultiManiaMenu_MMStatus();
 extern int MultiMania_Code[6];
 extern int MultiMania_CodePosition;
 extern int MultiMania_PPS;

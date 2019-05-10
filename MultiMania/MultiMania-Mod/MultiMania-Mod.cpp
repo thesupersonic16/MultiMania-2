@@ -245,8 +245,8 @@ extern "C"
     __declspec(dllexport) int MultiMania_Mod_PlaySoundFX_r(short SoundFXID, int a2, BYTE a3)
     {
         printf("playing SoundFX: %d\n", SoundFXID);
-        if (SoundFXID == 0 || // Jump
-            SoundFXID == 5 || // Break
+        if (SoundFXID == 00 || // Jump
+            SoundFXID == 05 || // Break
             SoundFXID == 11 ||
             SoundFXID == 12 ||
             SoundFXID == 13 ||
@@ -284,7 +284,7 @@ extern "C"
         char buffer[MAX_PATH];
         GetCurrentDirectoryA(MAX_PATH, buffer);
         SetCurrentDirectoryA(path);
-        printf("Loading MultiMania IL... ");
+        printf("[MultiMania-Mod] Loading MultiMania IL... ");
         MultiManiaCS = LoadLibrary("MultiMania.dll");
         if (!MultiManiaCS)
         {
@@ -304,6 +304,10 @@ extern "C"
         LoadExports();
         WriteData<7>((void*)(baseAddress + 0x1C3064), 0x90);
         WriteCall((void*)(baseAddress + 0x1C3064), MultiMania_Mod_SyncAndRestart);
+        WriteCall((void*)(baseAddress + 0x001C25DB), MultiManiaMenu_MMStatus);
+        WriteJump((void*)(baseAddress + 0x001C25E0), (void*)(baseAddress + 0x001C2A25));
+        WriteData((char*)(baseAddress + 0x001C2A6E), (char)6);
+        WriteData((char*)(baseAddress + 0x001C2A4E), (char)6);
         SoundFXTrampo = new Trampoline((baseAddress + 0x001BC390), (baseAddress + 0x001BC396), MultiMania_Mod_PlaySoundFX_r);
     }
 
