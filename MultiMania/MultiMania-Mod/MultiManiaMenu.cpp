@@ -14,7 +14,7 @@ using std::string;
 
 int MultiMania_Code[6];
 int MultiMania_CodePosition;
-int MultiMania_PPS = 70;
+int MultiMania_PPS = 40;
 
 static int ConnectionTimer = 0;
 
@@ -29,6 +29,10 @@ string s = "DEBUG: "; \
 s += str; \
 DevMenu_DrawRect(0, centerY - 16 + centerY / 2 + centerY / 4, centerX * 2, 32, 0x00004080, 255, 0, 1); \
 DevMenu_DrawText(centerX, s.c_str(), centerY - 4 + centerY / 2 + centerY / 4, 1, 0xF0F0F0); 
+
+#define MSG(str) \
+DevMenu_DrawRect(0, centerY - 16 + centerY / 2 + centerY / 4, centerX * 2, 32, 0x00004080, 255, 0, 1); \
+DevMenu_DrawText(centerX, str, centerY - 4 + centerY / 2 + centerY / 4, 1, 0xF0F0F0); 
 
 
 char MultiManiaMenu()
@@ -289,10 +293,25 @@ char MultiManiaMenu_Host_Code()
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00008000, 255, 0, 1);
     DevMenu_DrawText(centerX, (string("Connection Code: ") + buf).c_str(), centerY - 4, 1, 0xF0F0F0);
 
+    MSG("Tip: You can Press Ctrl + C to copy the code to the Clipboard.");
+
     result = Key_Enter | Controller_A;
     if ((Key_Enter | Controller_A) == 1)
     {
         GameState = *(GameStates*)(baseAddress + 0x002FBB54);
+    }
+    else if ((GetAsyncKeyState(VK_LCONTROL) & (1 << 15) || GetAsyncKeyState(VK_RCONTROL) & (1 << 15)) && GetAsyncKeyState('C') & (1 << 15))
+    {
+
+        const size_t len = strlen(buf) + 1;
+        HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, len);
+        memcpy(GlobalLock(hMem), buf, len);
+        GlobalUnlock(hMem);
+        OpenClipboard(0);
+        EmptyClipboard();
+        SetClipboardData(CF_TEXT, hMem);
+        CloseClipboard();
+        result = (dword_6F0AE4 + 1) & 7;
     }
     dword_6F0AE4 = 0;
     return result;
@@ -351,7 +370,6 @@ char MultiManiaMenu_ConnectionWarning_CLOSED()
     return result;
 }
 
-
 char MultiManiaMenu_ConnectionError_TIMEOUT()
 {
     char result;
@@ -381,29 +399,25 @@ char MultiManiaMenu_Connected()
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
     int YPosition = centerY - 84;
 
-    //DevMenu_DrawRect(0, 0, centerX * 2, centerY * 2, 0x000000, 255, 0, 1);
     // Title
     YPosition += 6;
     YPosition += 14;
     YPosition += 14;
-    //DevMenu_DrawText(centerX - 124, "Connected", YPosition, 0, 0xF0F0F0);
     
     YPosition += 40;
 
     // Bottom Panel
     DevMenu_DrawRect(centerX - 128, YPosition - 8, 256, 72, 0x00000080, 255, 0, 1);
 
+    if ((DevMenu_Option - DevMenu_Scroll) > 3)
+        DevMenu_Option = 0;
 
     int count = 3;
     int optionColours[4];
     for (int i = 0; i < count; ++i)
         optionColours[i] = 0x808090;
     optionColours[DevMenu_Option - DevMenu_Scroll] = 0xF0F0F0;
-    if ((DevMenu_Option - DevMenu_Scroll) > 3)
-        DevMenu_Option = 0;
-
-
-
+    
     DevMenu_DrawText(centerX, "Change Stage", YPosition, 1, optionColours[0]);      YPosition += 12;
     DevMenu_DrawText(centerX, "Change Character", YPosition, 1, optionColours[1]);  YPosition += 12;
                                                                                     YPosition += 12;
@@ -609,6 +623,13 @@ char MultiManiaMenu_ChangeChar()
 
 void MultiManiaMenu_MMStatus()
 {
+    if (MultiMania_Devmenu)
+    {
+        DevMenu_Address = MultiManiaMenu_Connected;
+        DevMenu_Option = 5;
+        DevMenu_Scroll = 0;
+        return;
+    }
     int centerX = *(_DWORD *)(dword_D3CC00 + 614416);
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
     int YPosition = centerY - 84;
@@ -620,7 +641,6 @@ void MultiManiaMenu_MMStatus()
     optionColours[DevMenu_Option - DevMenu_Scroll] = 0xF0F0F0;
 
 
-    //DevMenu_DrawRect(0, 0, centerX * 2, centerY * 2, 0x000000, 255, 0, 1);
     // Title
     YPosition += 6;
     YPosition += 14;

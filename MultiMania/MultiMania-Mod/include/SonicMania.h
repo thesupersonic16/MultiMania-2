@@ -1220,6 +1220,7 @@ namespace SonicMania
 #pragma endregion
 
 #pragma region DevMenu
+    DataPointer(bool, DevMenu_Enabled, 0x002FC867);
     DataPointer(void*, DevMenu_Address, 0x002FBB40);
     DataPointer(int, DevMenu_Option, 0x002FBB44);
     DataPointer(int, DevMenu_Scroll, 0x002FBB48);

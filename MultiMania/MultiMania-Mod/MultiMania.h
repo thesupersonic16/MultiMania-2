@@ -29,6 +29,8 @@ MultiManiaFunc(MultiMania_SendSoundFX, (short SoundFXID, int a2, BYTE a3));
 MultiManiaFunc(MultiMania_UpdatePlayer, (SonicMania::Character character));
 MultiManiaFunc(MultiMania_UpdateStage, (SonicMania::Scene scene));
 
+extern bool MultiMania_Devmenu;
+
 static void LoadExports()
 {
     LoadMultiManiaFunc(InitMultiMania);

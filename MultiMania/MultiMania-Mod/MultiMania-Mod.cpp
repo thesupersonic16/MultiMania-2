@@ -43,6 +43,7 @@ extern "C"
     static milliseconds Time = GetTime;
     static Character Player2Character = Character_None;
     Trampoline *SoundFXTrampo;
+    bool MultiMania_Devmenu = false;
 
     // TODO: Write comment on how these offsets are made
     __declspec(dllexport) void MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID)
@@ -302,6 +303,12 @@ extern "C"
             printf("Done.\n");
         SetCurrentDirectoryA(buffer);
         LoadExports();
+        if (!DevMenu_Enabled)
+        {
+            printf("[MultiMania-Mod] Devmenu is not active! MultiMania will attempt to enable it for MM use only.");
+            MultiMania_Devmenu = true;
+            DevMenu_Enabled = true;
+        }
         WriteData<7>((void*)(baseAddress + 0x1C3064), 0x90);
         WriteCall((void*)(baseAddress + 0x1C3064), MultiMania_Mod_SyncAndRestart);
         WriteCall((void*)(baseAddress + 0x001C25DB), MultiManiaMenu_MMStatus);
