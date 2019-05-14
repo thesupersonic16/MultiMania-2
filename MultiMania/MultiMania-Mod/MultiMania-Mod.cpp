@@ -41,7 +41,7 @@ extern "C"
     static BYTE LastPacket[25];
     static bool Processed = true;
     static milliseconds Time = GetTime;
-    static Character Player2Character = Character_None;
+    static Character Player2Character = -1;
     Trampoline *SoundFXTrampo;
     bool MultiMania_Devmenu = false;
 
@@ -70,7 +70,6 @@ extern "C"
             *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x00031190); counter += 4;
         }
     }
-
 
     __declspec(dllexport) void OpenMenu()
     {
@@ -132,14 +131,14 @@ extern "C"
     {
         switch (errorcode)
         {
-        case 0:
+        case 0: // Connected
             GameState = *(GameStates*)(baseAddress + 0x002FBB54);
             WriteJump((void*)(baseAddress + 0xC5449), (void*)(baseAddress + 0xC551D));
             break;
-        case 1:
+        case 1: // Invalid Connection Code
             DevMenu_Address = MultiManiaMenu_ConnectionError_INVALIDCC;
             break;
-        case 2:
+        case 2: // Disconnected
             WriteData((void*)(baseAddress + 0xC5449), restorePlayer2Respawn, 6);
             DevMenu_Address = MultiManiaMenu_ConnectionWarning_CLOSED;
             if (!(GameState | GameState_DevMenu))
@@ -190,11 +189,20 @@ extern "C"
             player.IsFacingLeft = data[counter++];
             player.Angle = *(int*)(data + counter); counter += 4;
 
-            if (Player2Character)
+            if (Player2Character != -1)
             {
                 if (*GetCharacter_ptr(slot) != Player2Character)
                     FastChangeCharacter(&player, Player2Character);
                 *GetCharacter_ptr(slot) = Player2Character;
+            }
+            else
+            {
+                auto character = GetCharacter_ptr(slot);
+                if (*character)
+                {
+                    Player2Character = *character;
+                    MultiMania_UpdatePlayer(Player2Character);
+                }
             }
         }
     }
@@ -315,6 +323,10 @@ extern "C"
         WriteJump((void*)(baseAddress + 0x001C25E0), (void*)(baseAddress + 0x001C2A25));
         WriteData((char*)(baseAddress + 0x001C2A6E), (char)6);
         WriteData((char*)(baseAddress + 0x001C2A4E), (char)6);
+
+        WriteData<7>((void*)(baseAddress + 0x001C2AD7), 0x90);
+        WriteCall((void*)(baseAddress + 0x001C2AD7), MultiMania_Mod_SyncAndRestart);
+        
         SoundFXTrampo = new Trampoline((baseAddress + 0x001BC390), (baseAddress + 0x001BC396), MultiMania_Mod_PlaySoundFX_r);
     }
 
