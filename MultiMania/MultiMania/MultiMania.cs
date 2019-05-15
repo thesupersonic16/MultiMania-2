@@ -100,7 +100,7 @@ namespace MultiMania
                 ++MultiManiaConnectionHandler.PacketCountSEND;
                 if (Timer % 4 == 0)
                 {
-                    var resultData = new byte[16];
+                    var resultData = new byte[24];
                     MultiMania_Mod_ReadResultData(0, resultData);
                     MultiManiaConnectionHandler.Connection.SendData(20, resultData);
                 }
@@ -162,7 +162,7 @@ namespace MultiMania
         [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern void MultiMania_Mod_SendEvent(int errorcode);
         [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID);
+        public static extern int MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID, byte character);
         [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
         public static extern int MultiMania_Mod_ReadResultData(int playerID, [In, Out] byte[] data);
         [DllImport("MultiMania-Mod.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]

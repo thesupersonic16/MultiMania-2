@@ -147,7 +147,7 @@ namespace MultiMania
                 byte LevelID = MultiMania.MultiMania_Mod_GetScene();
                 if (LevelID > 8)
                 {
-                    MultiMania.MultiMania_Mod_SetResultData(BitConverter.ToInt32(data, 1), BitConverter.ToInt32(data, 5), BitConverter.ToInt32(data, 9), BitConverter.ToInt32(data, 13), 1);
+                    MultiMania.MultiMania_Mod_SetResultData(BitConverter.ToInt32(data, 1), BitConverter.ToInt32(data, 5), BitConverter.ToInt32(data, 9), BitConverter.ToInt32(data, 13), BitConverter.ToInt32(data, 17), data[21]);
                 }
             }
             if (data[0] == 0x15)

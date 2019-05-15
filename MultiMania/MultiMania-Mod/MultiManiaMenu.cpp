@@ -13,7 +13,7 @@ using namespace SonicMania;
 using std::string;
 
 int MultiMania_Code[6];
-int MultiMania_CodePosition;
+int MultiMania_CodePosition = 6;
 int MultiMania_PPS = 40;
 
 static int ConnectionTimer = 0;
@@ -52,7 +52,6 @@ char MultiManiaMenu()
     //DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, 1, 0xF0F0F0);
     YPosition += 14;
     //DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
-    YPosition += 14;
     //DevMenu_DrawText(centerX, "Not Connected", YPosition, 1, 0xF0F0F0);
     YPosition += 40;
 
@@ -293,7 +292,7 @@ char MultiManiaMenu_Host_Code()
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00008000, 255, 0, 1);
     DevMenu_DrawText(centerX, (string("Connection Code: ") + buf).c_str(), centerY - 4, 1, 0xF0F0F0);
 
-    MSG("Tip: You can Press Ctrl + C to copy the code to the Clipboard.");
+    MSG("Test");
 
     result = Key_Enter | Controller_A;
     if ((Key_Enter | Controller_A) == 1)
@@ -401,7 +400,6 @@ char MultiManiaMenu_Connected()
 
     // Title
     YPosition += 6;
-    YPosition += 14;
     YPosition += 14;
     
     YPosition += 40;
@@ -519,7 +517,6 @@ char MultiManiaMenu_ChangeChar()
     DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, 1, 0xF0F0F0);
     YPosition += 14;
     DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
-    YPosition += 14;
     NetworkInfo info;
     if (MultiMania_GetNetworkInfo(&info))
     {
@@ -625,7 +622,12 @@ void MultiManiaMenu_MMStatus()
 {
     if (MultiMania_Devmenu)
     {
-        DevMenu_Address = MultiManiaMenu_Connected;
+        if (MultiMania_GetNetworkInfo(nullptr))
+            DevMenu_Address = MultiManiaMenu_Connected;
+        else
+            DevMenu_Address = MultiManiaMenu;
+        memset(MultiMania_Code, 0, 6);
+        MultiMania_CodePosition = 6;
         DevMenu_Option = 5;
         DevMenu_Scroll = 0;
         return;
@@ -643,7 +645,6 @@ void MultiManiaMenu_MMStatus()
 
     // Title
     YPosition += 6;
-    YPosition += 14;
     YPosition += 14;
     YPosition += 40;
     

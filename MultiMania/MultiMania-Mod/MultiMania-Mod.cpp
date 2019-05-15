@@ -41,12 +41,13 @@ extern "C"
     static BYTE LastPacket[25];
     static bool Processed = true;
     static milliseconds Time = GetTime;
-    static Character Player2Character = -1;
+    static Character Player2Character = Character_None;
+    static bool Player2Set = false;
     Trampoline *SoundFXTrampo;
     bool MultiMania_Devmenu = false;
 
     // TODO: Write comment on how these offsets are made
-    __declspec(dllexport) void MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID)
+    __declspec(dllexport) void MultiMania_Mod_SetResultData(int score, int finalRings, int totalRings, int itemboxes, int playerID, BYTE character)
     {
         // Player 2 Score
         if (*(int*)(baseAddress + 0x00AA763C) != 0)
@@ -55,6 +56,17 @@ extern "C"
             *GetAddress(baseAddress + 0x00AA763C, 0x00031174) = finalRings;
             *GetAddress(baseAddress + 0x00AA763C, 0x000311D8) = totalRings;
             *GetAddress(baseAddress + 0x00AA763C, 0x00031194) = itemboxes;
+            
+            auto characterPtr = (BYTE*)GetCharacter_ptr(playerID);
+
+            if (*characterPtr != character && CurrentScene >= Scene_GHZ1 && CurrentScene <= Scene_TMZ3_e)
+            {
+                auto player = (EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * playerID);
+                FastChangeCharacter(player, (Character)character);
+            }
+            *characterPtr = (Character)character;
+            Player2Character = (Character)character;
+
         }
     }
 
@@ -68,6 +80,8 @@ extern "C"
             *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x00031170); counter += 4;
             *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x000311D4); counter += 4;
             *(int*)(data + counter) = *GetAddress(baseAddress + 0x00AA763C, 0x00031190); counter += 4;
+            *(int*)(data + counter) = 1; counter += 4;
+            *(int*)(data + counter) = *GetCharacter_ptr(playerID); counter += 4;
         }
     }
 
@@ -98,9 +112,9 @@ extern "C"
         if (*GetCharacter_ptr(slot) != character)
         {
             auto player = (EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * slot);
-            FastChangeCharacter(player, character);
+            FastChangeCharacter(player, (Character)(character & 0xFF));
         }
-        *GetCharacter_ptr(slot) = character;
+        *(BYTE*)GetCharacter_ptr(slot) = character;
         Player2Character = character;
     }
 
@@ -189,7 +203,7 @@ extern "C"
             player.IsFacingLeft = data[counter++];
             player.Angle = *(int*)(data + counter); counter += 4;
 
-            if (Player2Character != -1)
+            if (Player2Set)
             {
                 if (*GetCharacter_ptr(slot) != Player2Character)
                     FastChangeCharacter(&player, Player2Character);
@@ -197,12 +211,9 @@ extern "C"
             }
             else
             {
-                auto character = GetCharacter_ptr(slot);
-                if (*character)
-                {
-                    Player2Character = *character;
-                    MultiMania_UpdatePlayer(Player2Character);
-                }
+                *(BYTE*)GetCharacter_ptr(slot) = Character_Tails;
+                Player2Character = Character_Tails;
+                Player2Set = true;
             }
         }
     }
@@ -226,9 +237,20 @@ extern "C"
             *(int*)(data + counter) = player.Angle; counter += 4;
         }
     }
-
+    int boot = false;
     __declspec(dllexport) void OnFrame()
     {
+        if (!boot)
+        {
+            if (!DevMenu_Enabled)
+            {
+                MultiMania_Devmenu = true;
+                DevMenu_Enabled = true;
+                printf("[MultiMania-Mod] Devmenu is not active! MultiMania will attempt to enable it for MM use only.");
+            }
+            boot = true;
+        }
+
         if (PlayerControllers[0].Down.Down && PlayerControllers[0].Up.Press && (GameState & GameState_DevMenu) != GameState_DevMenu)
             OpenMenu();
         if (MultiMania_GetNetworkInfo(nullptr))
@@ -253,7 +275,7 @@ extern "C"
 
     __declspec(dllexport) int MultiMania_Mod_PlaySoundFX_r(short SoundFXID, int a2, BYTE a3)
     {
-        printf("playing SoundFX: %d\n", SoundFXID);
+        //printf("playing SoundFX: %d\n", SoundFXID);
         if (SoundFXID == 00 || // Jump
             SoundFXID == 05 || // Break
             SoundFXID == 11 ||
@@ -311,12 +333,6 @@ extern "C"
             printf("Done.\n");
         SetCurrentDirectoryA(buffer);
         LoadExports();
-        if (!DevMenu_Enabled)
-        {
-            printf("[MultiMania-Mod] Devmenu is not active! MultiMania will attempt to enable it for MM use only.");
-            MultiMania_Devmenu = true;
-            DevMenu_Enabled = true;
-        }
         WriteData<7>((void*)(baseAddress + 0x1C3064), 0x90);
         WriteCall((void*)(baseAddress + 0x1C3064), MultiMania_Mod_SyncAndRestart);
         WriteCall((void*)(baseAddress + 0x001C25DB), MultiManiaMenu_MMStatus);
