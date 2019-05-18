@@ -275,26 +275,56 @@ extern "C"
 
     __declspec(dllexport) int MultiMania_Mod_PlaySoundFX_r(short SoundFXID, int a2, BYTE a3)
     {
-        //printf("playing SoundFX: %d\n", SoundFXID);
-        if (SoundFXID == 00 || // Jump
-            SoundFXID == 05 || // Break
-            SoundFXID == 11 ||
-            SoundFXID == 12 ||
-            SoundFXID == 13 ||
-            SoundFXID == 15 ||
-            SoundFXID == 18 ||
-            SoundFXID == 23 || // Knuckles Drop
-            SoundFXID == 30 ||
-            SoundFXID == 37 ||
-            SoundFXID == 38 ||
-            SoundFXID == 62 ||
-            SoundFXID == 63 ||
-            SoundFXID == 65 ||
-            SoundFXID == 66 ||
-            SoundFXID == 68 ||
-            SoundFXID == 69 ||
-            SoundFXID == 73 ||
-            SoundFXID == 85)
+        printf("playing SoundFX: %d\n", SoundFXID);
+        if (SoundFXID == SonicMania::GetSoundFXID("Global/Jump.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/BlueShield.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/BubbleBounce.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/BubbleShield.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Charge.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Destroy.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/DropDash.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/FireDash.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/FireShield.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Flying.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Grab.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Hurt.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/HyperRing.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/InstaShield.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Land.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/LightningJump.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/LightningShield.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/LoseRings.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/MightyDeflect.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/MightyDrill.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/MightyLand.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/MightyUnspin.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/OuttaHere.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/PeelCharge.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/PeelRelease.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Push.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Recovery.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Release.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Ring.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Roll.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/ScoreAdd.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/ScoreTotal.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/SignPost.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/SignPost2p.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Skidding.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Slide.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Sliding.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/SpecialRing.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/SpecialWarp.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Spike.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/SpikesMove.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Spring.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/StarPost.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Swap.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/SwapFail.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Teleport.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Tired.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Twinkle.wav") ||
+            SoundFXID == SonicMania::GetSoundFXID("Global/Warp.wav"))
         {
             MultiMania_SendSoundFX(SoundFXID, a2, a3);
         }
@@ -342,6 +372,7 @@ extern "C"
 
         WriteData<7>((void*)(baseAddress + 0x001C2AD7), 0x90);
         WriteCall((void*)(baseAddress + 0x001C2AD7), MultiMania_Mod_SyncAndRestart);
+
         
         SoundFXTrampo = new Trampoline((baseAddress + 0x001BC390), (baseAddress + 0x001BC396), MultiMania_Mod_PlaySoundFX_r);
     }
