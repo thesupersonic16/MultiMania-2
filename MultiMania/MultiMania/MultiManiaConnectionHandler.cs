@@ -22,9 +22,15 @@ namespace MultiMania
             MultiMania.MultiMania_Mod_SendEvent(2);
         }
 
+        public static void OnTimeOut()
+        {
+            MultiMania.MultiMania_Mod_SendEvent(3);
+        }
+
         public static void Connect(string connectionCode)
         {
             Connection.OnDisconnect = OnDisconnect;
+            Connection.OnTimeOut = OnTimeOut;
             // Unregisters all events
             Connection.UnregisterAllPacketEvents();
             // Registers the receive event
@@ -42,6 +48,7 @@ namespace MultiMania
         public static void Host(int PPS)
         {
             Connection.OnDisconnect = OnDisconnect;
+            Connection.OnTimeOut = OnTimeOut;
             // Unregisters all events
             Connection.UnregisterAllPacketEvents();
             // Registers the receive event

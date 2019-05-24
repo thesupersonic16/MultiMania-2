@@ -151,15 +151,22 @@ extern "C"
         case 0: // Connected
             GameState = *(GameStates*)(baseAddress + 0x002FBB54);
             WriteJump((void*)(baseAddress + 0xC5449), (void*)(baseAddress + 0xC551D));
+            WriteData<1>((void*)(baseAddress + 0xDE42), 0x90); // Disable Timeout
             break;
         case 1: // Invalid Connection Code
             DevMenu_Address = MultiManiaMenu_ConnectionError_INVALIDCC;
             break;
         case 2: // Disconnected
             WriteData((void*)(baseAddress + 0xC5449), restorePlayer2Respawn, 6);
+            WriteData<1>((void*)(baseAddress + 0xDE42), 0x48); // Enable Timeout
             DevMenu_Address = MultiManiaMenu_ConnectionWarning_CLOSED;
             if (!(GameState | GameState_DevMenu))
                 *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
+            GameState = GameState_DevMenu;
+        case 3: // Timed out
+            if (!(GameState | GameState_DevMenu))
+                *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
+            DevMenu_Address = MultiManiaMenu_ConnectionError_TIMEOUT;
             GameState = GameState_DevMenu;
         default:
             break;

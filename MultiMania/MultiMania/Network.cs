@@ -24,6 +24,8 @@ namespace MultiMania
         public int DownPacketsTotal = 0;
         public int LostPacketsTotal = 0;
         public Action OnDisconnect = null;
+        public Action OnTimeout = null;
+        public DateTime LastPacketTime = DateTime.Now;
         protected List<Func<byte[], IPEndPoint, bool>> PacketEventRegistery = new List<Func<byte[], IPEndPoint, bool>>();
 
         public bool OpenConnection(string ipText, string portText)
@@ -74,6 +76,16 @@ namespace MultiMania
                 UpBytesTotal++;
                 Status = "Request sent, awaiting for response...";
                 IPEndPoint sender = null;
+                while (UDPSocket.Available == 0)
+                {
+                    if ((DateTime.Now - LastPacketTime).Seconds > 5)
+                    {
+                        CloseConnection();
+                        OnTimeout();
+                        return false;
+                    }
+                    Thread.Sleep(100);
+                }
                 var data = UDPSocket.Receive(ref sender);
                 lastIP = sender;
                 DownBytesTotal += data.Length;
@@ -216,6 +228,7 @@ namespace MultiMania
         {
             try
             {
+                LastPacketTime = DateTime.Now;
                 while (Connected)
                 {
                     if (!Connected) // Disconnect
@@ -223,10 +236,17 @@ namespace MultiMania
                         CloseConnection();
                         return;
                     }
+                    if ((DateTime.Now - LastPacketTime).Seconds > 5)
+                    {
+                        CloseConnection();
+                        OnTimeout();
+                        return;
+                    }
                     if (UDPSocket.Available > 0)
                     {
                         IPEndPoint ip = null;
                         PacketData = UDPSocket.Receive(ref ip);
+                        LastPacketTime = DateTime.Now;
                         DownBytesTotal += PacketData.Length;
                         DownPacketsTotal++;
                         if (PacketData[0] == 0x01) // Connect
