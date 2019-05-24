@@ -91,9 +91,9 @@ namespace MultiMania
                 Timer = 60;
             if (MultiManiaConnectionHandler.Connection.Connected && !MultiManiaConnectionHandler.Bonk)
             {
-                var data = new byte[25];
+                var data = new byte[26];
                 MultiMania_Mod_ReadPlayerData(0, data);
-                var bytes = new byte[25 + 8];
+                var bytes = new byte[26 + 8];
                 Array.Copy(data, 0, bytes, 8, data.Length);
                 Array.Copy(BitConverter.GetBytes(MultiManiaConnectionHandler.PacketCountSEND), 0, bytes, 0, 8);
                 MultiManiaConnectionHandler.Connection.SendData(10, MultiManiaConnectionHandler.Compress(bytes));

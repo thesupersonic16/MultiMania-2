@@ -12,6 +12,6 @@
 #include <windows.h>
 
 
-#define MMVER "2.0.0-privtest-0"
+#define MMVER "2.0.0-privtest-1"
 
 // reference additional headers your program requires here

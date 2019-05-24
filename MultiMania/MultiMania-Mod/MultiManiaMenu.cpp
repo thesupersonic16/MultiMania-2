@@ -28,11 +28,11 @@ DataPointer(DWORD, dword_6F0AE4, 0x002FBB4C);
 string s = "DEBUG: "; \
 s += str; \
 DevMenu_DrawRect(0, centerY - 16 + centerY / 2 + centerY / 4, centerX * 2, 32, 0x00004080, 255, 0, 1); \
-DevMenu_DrawText(centerX, s.c_str(), centerY - 4 + centerY / 2 + centerY / 4, 1, 0xF0F0F0); 
+DevMenu_DrawText(centerX, s.c_str(), centerY - 4 + centerY / 2 + centerY / 4, Alignment_Centre, 0xF0F0F0); 
 
 #define MSG(str) \
 DevMenu_DrawRect(0, centerY - 16 + centerY / 2 + centerY / 4, centerX * 2, 32, 0x00004080, 255, 0, 1); \
-DevMenu_DrawText(centerX, str, centerY - 4 + centerY / 2 + centerY / 4, 1, 0xF0F0F0); 
+DevMenu_DrawText(centerX, str, centerY - 4 + centerY / 2 + centerY / 4, Alignment_Centre, 0xF0F0F0); 
 
 
 char MultiManiaMenu()
@@ -67,7 +67,7 @@ char MultiManiaMenu()
 
 
 
-    DevMenu_DrawText(centerX - 116, "Connection Code: ", YPosition, 0, optionColours[0]);
+    DevMenu_DrawText(centerX - 116, "Connection Code: ", YPosition, Alignment_Left, optionColours[0]);
     
     DevMenu_DrawRect(centerX + 19, YPosition - 2, 78, 11, 0x00000000, 255, 0, 1);
     DevMenu_DrawRect(centerX + 20, YPosition - 1, 76, 9, 0x00FFFFFF, 255, 0, 1);
@@ -77,27 +77,27 @@ char MultiManiaMenu()
     for (int i = 0; i < 6; ++i)
     {
         buf[0] = '0' + MultiMania_Code[i];
-        DevMenu_DrawText(centerX + 43 + (i * 8), buf, YPosition, 0, i == MultiMania_CodePosition ? 0x00FF0000 : 0x00000000);
+        DevMenu_DrawText(centerX + 43 + (i * 8), buf, YPosition, Alignment_Left, i == MultiMania_CodePosition ? 0x00FF0000 : 0x00000000);
     }
-    DevMenu_DrawText(centerX + 27, "MM", YPosition, 0, 0x000000);               YPosition += 12;
-    DevMenu_DrawText(centerX - 116, "Packets Per Secs.", YPosition, 0, optionColours[1]);
+    DevMenu_DrawText(centerX + 27, "MM", YPosition, Alignment_Left, 0x000000);               YPosition += 12;
+    DevMenu_DrawText(centerX - 116, "Packets Per Secs.", YPosition, Alignment_Left, optionColours[1]);
     
     string s = "<";
     s += std::to_string(MultiMania_PPS);
     s += ">";
     
-    DevMenu_DrawText(centerX + 76, s.c_str(), YPosition, 2, 0xF0F07D);          YPosition += 12;
+    DevMenu_DrawText(centerX + 76, s.c_str(), YPosition, Alignment_Right, 0xF0F07D);          YPosition += 12;
                                                                                 YPosition += 12;
-    DevMenu_DrawText(centerX, "Connect", YPosition, 1, optionColours[2]);       YPosition += 12;
-    DevMenu_DrawText(centerX, "Host Game", YPosition, 1, optionColours[3]);     YPosition += 12;
+    DevMenu_DrawText(centerX, "Connect", YPosition, Alignment_Centre, optionColours[2]);       YPosition += 12;
+    DevMenu_DrawText(centerX, "Host Game", YPosition, Alignment_Centre, optionColours[3]);     YPosition += 12;
 
     YPosition += 10;
 
     DevMenu_DrawRect(centerX - 128, YPosition, 256, 48, 0x00000080, 255, 0, 1);
     YPosition += 6;
-    DevMenu_DrawText(centerX, (std::string("MultiMania ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, (std::string("MultiMania ") + MMVER).c_str(), YPosition, Alignment_Centre, 0xF0F0F0);
     YPosition += 14;
-    DevMenu_DrawText(centerX, "Not Connected", YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "Not Connected", YPosition, Alignment_Centre, 0xF0F0F0);
     YPosition += 14;
     //DevMenu_DrawText(centerX, "Open Menu", YPosition, 1, optionColours[5]);
     YPosition += 40;
@@ -258,7 +258,7 @@ char MultiManiaMenu_Connecting()
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
     
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00000080, 255, 0, 1);
-    DevMenu_DrawText(centerX, "Connecting...", centerY - 4, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "Connecting...", centerY - 4, Alignment_Centre, 0xF0F0F0);
 
     result = Key_Enter | Controller_A;
     dword_6F0AE4 = 0;
@@ -290,7 +290,7 @@ char MultiManiaMenu_Host_Code()
         buf[i + 2] = '0' + MultiMania_Code[i];
     
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00008000, 255, 0, 1);
-    DevMenu_DrawText(centerX, (string("Connection Code: ") + buf).c_str(), centerY - 4, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, (string("Connection Code: ") + buf).c_str(), centerY - 4, Alignment_Centre, 0xF0F0F0);
 
     MSG("Test");
 
@@ -324,7 +324,7 @@ char MultiManiaMenu_Host_MMSERVER()
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
 
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00004080, 255, 0, 1);
-    DevMenu_DrawText(centerX, "Connecting to MultiMania Server...", centerY - 4, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "Connecting to MultiMania Server...", centerY - 4, Alignment_Centre, 0xF0F0F0);
 
     result = Key_Enter | Controller_A;
     dword_6F0AE4 = 0;
@@ -339,7 +339,7 @@ char MultiManiaMenu_ConnectionError_INVALIDCC()
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
 
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00800000, 255, 0, 1);
-    DevMenu_DrawText(centerX, "Connection Failed! Invalid Connection Code!", centerY - 4, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "Connection Failed! Invalid Connection Code!", centerY - 4, Alignment_Centre, 0xF0F0F0);
 
     result = Key_Enter | Controller_A;
     dword_6F0AE4 = 0;
@@ -358,7 +358,7 @@ char MultiManiaMenu_ConnectionWarning_CLOSED()
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
 
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00805000, 255, 0, 1);
-    DevMenu_DrawText(centerX, "Connection Closed!", centerY - 4, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "Connection Closed!", centerY - 4, Alignment_Centre, 0xF0F0F0);
 
     result = Key_Enter | Controller_A;
     dword_6F0AE4 = 0;
@@ -377,7 +377,7 @@ char MultiManiaMenu_ConnectionError_TIMEOUT()
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
 
     DevMenu_DrawRect(0, centerY - 16, centerX * 2, 32, 0x00800000, 255, 0, 1);
-    DevMenu_DrawText(centerX, "Connection Failed! Connection Timed out!", centerY - 4, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "Connection Failed! Connection Timed out!", centerY - 4, Alignment_Centre, 0xF0F0F0);
 
     result = Key_Enter | Controller_A;
     dword_6F0AE4 = 0;
@@ -408,7 +408,10 @@ char MultiManiaMenu_Connected()
     DevMenu_DrawRect(centerX - 128, YPosition - 8, 256, 72, 0x00000080, 255, 0, 1);
 
     if ((DevMenu_Option - DevMenu_Scroll) > 3)
+    {
+        DevMenu_Scroll = 0;
         DevMenu_Option = 0;
+    }
 
     int count = 3;
     int optionColours[4];
@@ -416,16 +419,16 @@ char MultiManiaMenu_Connected()
         optionColours[i] = 0x808090;
     optionColours[DevMenu_Option - DevMenu_Scroll] = 0xF0F0F0;
     
-    DevMenu_DrawText(centerX, "Change Stage", YPosition, 1, optionColours[0]);      YPosition += 12;
-    DevMenu_DrawText(centerX, "Change Character", YPosition, 1, optionColours[1]);  YPosition += 12;
+    DevMenu_DrawText(centerX, "Change Stage", YPosition, Alignment_Centre, optionColours[0]);      YPosition += 12;
+    DevMenu_DrawText(centerX, "Change Character", YPosition, Alignment_Centre, optionColours[1]);  YPosition += 12;
                                                                                     YPosition += 12;
                                                                                     YPosition += 12;
-    DevMenu_DrawText(centerX, "Disconnect", YPosition, 1, optionColours[2]);        YPosition += 12;
+    DevMenu_DrawText(centerX, "Disconnect", YPosition, Alignment_Centre, optionColours[2]);        YPosition += 12;
 
     YPosition += 10;
     DevMenu_DrawRect(centerX - 128, YPosition, 256, 48, 0x00000080, 255, 0, 1);
     YPosition += 6;
-    DevMenu_DrawText(centerX, (std::string("MultiMania ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, (std::string("MultiMania ") + MMVER).c_str(), YPosition, Alignment_Centre, 0xF0F0F0);
     YPosition += 14;
     char buff[128];
     memset(buff, 0, 128);
@@ -433,7 +436,7 @@ char MultiManiaMenu_Connected()
     MultiMania_GetNetworkInfo(&info);
     sprintf_s(buff, 128, "U:%d D:%d S:%d R:%d L:%d", info.UpBytesTotal, info.DownBytesTotal, info.UpPacketsTotal, info.DownPacketsTotal, info.LostPacketsTotal);
 
-    DevMenu_DrawText(centerX, buff, YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, buff, YPosition, Alignment_Centre, 0xF0F0F0);
 
 
     if (Key_Up)
@@ -514,9 +517,9 @@ char MultiManiaMenu_ChangeChar()
     // Title
     DevMenu_DrawRect(centerX - 128, centerY - 84, 256, 48, 0x00000080, 255, 0, 1);
     YPosition += 6;
-    DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, Alignment_Centre, 0xF0F0F0);
     YPosition += 14;
-    DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, Alignment_Centre, 0xF0F0F0);
     NetworkInfo info;
     if (MultiMania_GetNetworkInfo(&info))
     {
@@ -524,11 +527,11 @@ char MultiManiaMenu_ChangeChar()
         memset(buff, 0, 128);
         sprintf_s(buff, 128, "U:%d D:%d S:%d R:%d L:%d", info.UpBytesTotal, info.DownBytesTotal, info.UpPacketsTotal, info.DownPacketsTotal, info.LostPacketsTotal);
 
-        DevMenu_DrawText(centerX, buff, YPosition, 1, 0xF0F0F0);
+        DevMenu_DrawText(centerX, buff, YPosition, Alignment_Centre, 0xF0F0F0);
     }
     else
     {
-        DevMenu_DrawText(centerX, "Not Connected", YPosition, 1, 0xF0F0F0);
+        DevMenu_DrawText(centerX, "Not Connected", YPosition, Alignment_Centre, 0xF0F0F0);
     }
     YPosition += 40;
 
@@ -553,7 +556,7 @@ char MultiManiaMenu_ChangeChar()
         YPosition += 10;
         if ((i - DevMenu_Scroll) > 5)
             break;
-        DevMenu_DrawText(centerX, CharOptions[i], YPosition, 1, optionColours[i - DevMenu_Scroll]);
+        DevMenu_DrawText(centerX, CharOptions[i], YPosition, Alignment_Centre, optionColours[i - DevMenu_Scroll]);
     }
 
     if (Key_Up)
@@ -651,16 +654,16 @@ void MultiManiaMenu_MMStatus()
     bool connected = MultiMania_GetNetworkInfo(nullptr);
 
     DevMenu_DrawRect(centerX - 128, YPosition - 8, 256, 72, 0x00000080, 255, 0, 1);
-    DevMenu_DrawText(centerX, "Resume", YPosition, 1, optionColours[0]);            YPosition += 12;
-    DevMenu_DrawText(centerX, "Restart", YPosition, 1, optionColours[1]);           YPosition += 12;
-    DevMenu_DrawText(centerX, "Stage Select", YPosition, 1, optionColours[2]);      YPosition += 12;
-    DevMenu_DrawText(centerX, "Options", YPosition, 1, optionColours[3]);           YPosition += 12;
-    DevMenu_DrawText(centerX, "Exit", YPosition, 1, optionColours[4]);              YPosition += 12;
+    DevMenu_DrawText(centerX, "Resume", YPosition, Alignment_Centre, optionColours[0]);            YPosition += 12;
+    DevMenu_DrawText(centerX, "Restart", YPosition, Alignment_Centre, optionColours[1]);           YPosition += 12;
+    DevMenu_DrawText(centerX, "Stage Select", YPosition, Alignment_Centre, optionColours[2]);      YPosition += 12;
+    DevMenu_DrawText(centerX, "Options", YPosition, Alignment_Centre, optionColours[3]);           YPosition += 12;
+    DevMenu_DrawText(centerX, "Exit", YPosition, Alignment_Centre, optionColours[4]);              YPosition += 12;
     YPosition += 10;
 
     DevMenu_DrawRect(centerX - 128, YPosition, 256, 48, 0x00000080, 255, 0, 1);
     YPosition += 6;
-    DevMenu_DrawText(centerX, (std::string("MultiMania ") + MMVER).c_str(), YPosition, 1, 0xF0F0F0);
+    DevMenu_DrawText(centerX, (std::string("MultiMania ") + MMVER).c_str(), YPosition, Alignment_Centre, 0xF0F0F0);
     YPosition += 14;
     if (connected)
     {
@@ -670,12 +673,12 @@ void MultiManiaMenu_MMStatus()
         MultiMania_GetNetworkInfo(&info);
         sprintf_s(buff, 128, "U:%d D:%d S:%d R:%d L:%d", info.UpBytesTotal, info.DownBytesTotal, info.UpPacketsTotal, info.DownPacketsTotal, info.LostPacketsTotal);
 
-        DevMenu_DrawText(centerX, buff, YPosition, 1, 0xF0F0F0);
+        DevMenu_DrawText(centerX, buff, YPosition, Alignment_Centre, 0xF0F0F0);
     }
     else
-        DevMenu_DrawText(centerX, "Not Connected", YPosition, 1, 0xF0F0F0);
+        DevMenu_DrawText(centerX, "Not Connected", YPosition, Alignment_Centre, 0xF0F0F0);
     YPosition += 14;
-    DevMenu_DrawText(centerX, "Open Menu", YPosition, 1, optionColours[5]);
+    DevMenu_DrawText(centerX, "Open Menu", YPosition, Alignment_Centre, optionColours[5]);
     YPosition += 40;
 
     if ((Key_Enter | Controller_A) && DevMenu_Option == 5)

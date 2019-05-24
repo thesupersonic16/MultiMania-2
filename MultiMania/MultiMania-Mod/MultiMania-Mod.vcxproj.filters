@@ -30,6 +30,9 @@
     <ClInclude Include="include\SonicMania.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MultiManiaStartup.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\mania-mod-loader\ManiaModLoader\Trampoline.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultiManiaStartup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

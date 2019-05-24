@@ -63,6 +63,7 @@
     <PostBuildEvent>if not exist "$(SolutionDir)..\Out" ( mkdir "$(SolutionDir)..\Out" )
 if exist "$(SolutionDir)..\Out\$(TargetFileName)" ( del "$(SolutionDir)..\Out\$(TargetFileName)" )
 if not exist "$(SolutionDir)..\Out\mod.ini" ( xcopy "$(SolutionDir)..\Data\mod.ini"  "$(SolutionDir)..\Out\" )
+if not exist "$(SolutionDir)..\Out\MultiManiaLogo.bin" ( xcopy "$(SolutionDir)..\Data\MultiManiaLogo.bin"  "$(SolutionDir)..\Out\" )
 if not exist "$(SolutionDir)..\Out\$(TargetFileName)" ( xcopy "$(TargetPath)"  "$(SolutionDir)..\Out\" )
 </PostBuildEvent>
   </PropertyGroup>

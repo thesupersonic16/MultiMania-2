@@ -418,7 +418,7 @@ namespace SonicMania
     #define PlayerStatus_SpinDash               (SonicMania::PlayerStatus)(baseAddress + 0x000CBD80)
     #define PlayerStatus_Roll                   (SonicMania::PlayerStatus)(baseAddress + 0x000CB850)
     #define PlayerStatus_Hurt                   (SonicMania::PlayerStatus)(baseAddress + 0x004CCA00) // TODO: needs updating
-    #define PlayerStatus_Dead                   (SonicMania::PlayerStatus)(baseAddress + 0x004CCAC0) // TODO: needs updating
+    #define PlayerStatus_Dead                   (SonicMania::PlayerStatus)(baseAddress + 0x000CCAC0)
     #define PlayerStatus_Gimmick                (SonicMania::PlayerStatus)(baseAddress + 0x000CAD70)
     #define PlayerStatus_Gimmick2               (SonicMania::PlayerStatus)(baseAddress + 0x004CBA90) // TODO: needs updating
     #define PlayerStatus_Hanging                (SonicMania::PlayerStatus)(baseAddress + 0x004CAD70) // TODO: needs updating
@@ -1232,8 +1232,15 @@ namespace SonicMania
     FunctionPointer(char, Devmenu_SceneSelect, (), 0x001C2DB0);
     FunctionPointer(char, Devmenu_Options, (), 0x001C3090);
 
+    enum DevMenu_Alignment : int
+    {
+        Alignment_Left,
+        Alignment_Centre,
+        Alignment_Right
+    };
+
     static int loc_DrawText = baseAddress + 0x1D58C0;
-    static __declspec(naked) WORD DevMenu_DrawText(int XPosition, const char* text, int YPosition, int isCentered, int color)
+    static __declspec(naked) WORD DevMenu_DrawText(int XPosition, const char* text, int YPosition, DevMenu_Alignment alignment, int color)
     {
         __asm
         {

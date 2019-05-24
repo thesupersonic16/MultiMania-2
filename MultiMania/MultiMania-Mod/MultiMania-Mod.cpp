@@ -11,6 +11,7 @@
 #include <chrono>
 #include "MultiMania.h"
 #include "MultiManiaMenu.h"
+#include "MultiManiaStartup.h"
 
 using namespace SonicMania;
 using namespace std::chrono;
@@ -43,6 +44,8 @@ extern "C"
     static milliseconds Time = GetTime;
     static Character Player2Character = Character_None;
     static bool Player2Set = false;
+    static bool KillDone = false;
+    static int SendKill = false;
     Trampoline *SoundFXTrampo;
     bool MultiMania_Devmenu = false;
 
@@ -57,15 +60,15 @@ extern "C"
             *GetAddress(baseAddress + 0x00AA763C, 0x000311D8) = totalRings;
             *GetAddress(baseAddress + 0x00AA763C, 0x00031194) = itemboxes;
             
-            auto characterPtr = (BYTE*)GetCharacter_ptr(playerID);
-
-            if (*characterPtr != character && CurrentScene >= Scene_GHZ1 && CurrentScene <= Scene_TMZ3_e)
-            {
-                auto player = (EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * playerID);
-                FastChangeCharacter(player, (Character)character);
-            }
-            *characterPtr = (Character)character;
-            Player2Character = (Character)character;
+            //auto characterPtr = (BYTE*)GetCharacter_ptr(playerID);
+            //
+            //if (*characterPtr != character && CurrentScene >= Scene_GHZ1 && CurrentScene <= Scene_TMZ3_e)
+            //{
+            //    auto player = (EntityPlayer*)(baseAddress + 0x00469A10 + 0x458 * playerID);
+            //    FastChangeCharacter(player, (Character)character);
+            //}
+            //*characterPtr = (Character)character;
+            //Player2Character = (Character)character;
 
         }
     }
@@ -90,7 +93,7 @@ extern "C"
         if (MultiMania_GetNetworkInfo(nullptr))
             DevMenu_Address = MultiManiaMenu_Connected;
         else
-            DevMenu_Address = MultiManiaMenu;
+            DevMenu_Address = MultiManiaStartupMenu;//MultiManiaMenu;
         memset(MultiMania_Code, 0, 6);
         MultiMania_CodePosition = 6;
         *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
@@ -175,6 +178,22 @@ extern "C"
         int counter = 0;
         if (*(int*)(baseAddress + 0x00AC690C) != 0)
         {
+            if (*(bool*)(data + counter))
+            {
+                player.Position.Y = 99999;
+                player.Status = PlayerStatus_Dead;
+                return;
+            }
+            if (player.Status != PlayerStatus_Dead)
+            {
+                player.Status = PlayerStatus_None;
+            }
+            else
+            {
+                player.Position.Y = 999999;
+                return;
+            }
+            counter += 1;
             short x = *(short*)(data + counter); counter += 2;
             short y = *(short*)(data + counter); counter += 2;
             player.LifeCount = (int)data[counter++];
@@ -183,9 +202,8 @@ extern "C"
             short frameID = *(short*)(data + counter); counter += 2;
             SetSpriteAnimation(player.SpriteIndex, animID, &player.Animation, true, frameID);
             player.InputStatus = InputStatus_None;
-            player.Status = PlayerStatus_None;
             player.SetVelocity(0, 0);
-
+            
             if (x == 0 && y == 0)
             {
                 player.LifeCount = 3;
@@ -202,7 +220,7 @@ extern "C"
             player.Shield = (ShieldType)data[counter++];
             player.IsFacingLeft = data[counter++];
             player.Angle = *(int*)(data + counter); counter += 4;
-
+            
             if (Player2Set)
             {
                 if (*GetCharacter_ptr(slot) != Player2Character)
@@ -225,6 +243,7 @@ extern "C"
 
         if (*(int*)(baseAddress + 0x00AC690C) != 0)
         {
+            *(bool*)(data + counter) = (SendKill--) != 0; counter += 1;
             *(short*)(data + counter) = player.Position.X; counter += 2;
             *(short*)(data + counter) = player.Position.Y; counter += 2;
             *(BYTE*)(data + counter) = player.LifeCount; counter += 1;
@@ -235,6 +254,8 @@ extern "C"
             *(BYTE*)(data + counter) = player.Shield; counter += 1;
             *(BYTE*)(data + counter) = player.IsFacingLeft; counter += 1;
             *(int*)(data + counter) = player.Angle; counter += 4;
+            if (SendKill < 0 )
+                SendKill = 0;
         }
     }
     int boot = false;
@@ -248,6 +269,9 @@ extern "C"
                 DevMenu_Enabled = true;
                 printf("[MultiMania-Mod] Devmenu is not active! MultiMania will attempt to enable it for MM use only.");
             }
+            *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
+            GameState = GameState_DevMenu;
+            DevMenu_Address = MultiManiaStartupMenu;
             boot = true;
         }
 
@@ -255,6 +279,8 @@ extern "C"
             OpenMenu();
         if (MultiMania_GetNetworkInfo(nullptr))
         {
+            if (Player1.KillFlag)
+                SendKill = 5;
             if ((GetTime - Time) > (milliseconds)(long long)((float)1000.0f / MultiMania_PPS))
             {
                 Time = GetTime;
@@ -275,7 +301,7 @@ extern "C"
 
     __declspec(dllexport) int MultiMania_Mod_PlaySoundFX_r(short SoundFXID, int a2, BYTE a3)
     {
-        printf("playing SoundFX: %d\n", SoundFXID);
+        //printf("playing SoundFX: %d\n", SoundFXID);
         if (SoundFXID == SonicMania::GetSoundFXID("Global/Jump.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/BlueShield.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/BubbleBounce.wav") ||
@@ -285,7 +311,6 @@ extern "C"
             SoundFXID == SonicMania::GetSoundFXID("Global/DropDash.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/FireDash.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/FireShield.wav") ||
-            SoundFXID == SonicMania::GetSoundFXID("Global/Flying.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Grab.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Hurt.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/HyperRing.wav") ||
@@ -304,7 +329,6 @@ extern "C"
             SoundFXID == SonicMania::GetSoundFXID("Global/Push.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Recovery.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Release.wav") ||
-            SoundFXID == SonicMania::GetSoundFXID("Global/Ring.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Roll.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/ScoreAdd.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/ScoreTotal.wav") ||
@@ -322,7 +346,6 @@ extern "C"
             SoundFXID == SonicMania::GetSoundFXID("Global/Swap.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/SwapFail.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Teleport.wav") ||
-            SoundFXID == SonicMania::GetSoundFXID("Global/Tired.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Twinkle.wav") ||
             SoundFXID == SonicMania::GetSoundFXID("Global/Warp.wav"))
         {
@@ -361,6 +384,9 @@ extern "C"
         }
         else
             printf("Done.\n");
+        printf("[MultiMania-Mod] Loading MultiMania Logo... ");
+        Init();
+        printf("Done.\n");
         SetCurrentDirectoryA(buffer);
         LoadExports();
         WriteData<7>((void*)(baseAddress + 0x1C3064), 0x90);
