@@ -30,7 +30,7 @@ namespace MultiMania
         public static void Connect(string connectionCode)
         {
             Connection.OnDisconnect = OnDisconnect;
-            Connection.OnTimeOut = OnTimeOut;
+            Connection.OnTimeout = OnTimeOut;
             // Unregisters all events
             Connection.UnregisterAllPacketEvents();
             // Registers the receive event
@@ -40,6 +40,7 @@ namespace MultiMania
             // TODO: Write Patches
 
             Bonk = false;
+            Connection.CheckTiming = true;
             Connection.OpenConnection(GetServerAddress(), 16004);
             Connection.Hosting = false;
             Connection.SendData(101, Encoding.ASCII.GetBytes(connectionCode));
@@ -48,7 +49,7 @@ namespace MultiMania
         public static void Host(int PPS)
         {
             Connection.OnDisconnect = OnDisconnect;
-            Connection.OnTimeOut = OnTimeOut;
+            Connection.OnTimeout = OnTimeOut;
             // Unregisters all events
             Connection.UnregisterAllPacketEvents();
             // Registers the receive event
@@ -58,6 +59,7 @@ namespace MultiMania
             // TODO: Write Patches
 
             Bonk = true;
+            Connection.CheckTiming = false;
             Connection.OpenConnection(GetServerAddress(), 16004);
             Connection.Hosting = true;
             Connection.SendCommand(100);
@@ -178,6 +180,7 @@ namespace MultiMania
                 PacketCountSEND = 0;
                 PacketCountRECV = 0;
                 Bonk = false;
+                Connection.CheckTiming = true;
                 MultiMania.MultiMania_Mod_SendEvent(0);
             }
 

@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 #include <chrono>
+#include <fstream>
 #include "MultiMania.h"
 #include "MultiManiaMenu.h"
 #include "MultiManiaStartup.h"
@@ -38,6 +39,7 @@ extern "C"
     static bool KillPlayer2 = false;
     static bool KillPlayer3 = false;
     static bool KillPlayer4 = false;
+    static bool Firstboot = true;
     static BYTE LastPacket_old[25];
     static BYTE LastPacket[25];
     static bool Processed = true;
@@ -265,7 +267,9 @@ extern "C"
                 SendKill = 0;
         }
     }
+
     int boot = false;
+    int boot2 = 10;
     __declspec(dllexport) void OnFrame()
     {
         if (!boot)
@@ -276,11 +280,21 @@ extern "C"
                 DevMenu_Enabled = true;
                 printf("[MultiMania-Mod] Devmenu is not active! MultiMania will attempt to enable it for MM use only.");
             }
-            *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
-            GameState = GameState_DevMenu;
-            DevMenu_Address = MultiManiaStartupMenu;
             boot = true;
         }
+
+        if (boot2 == 0)
+        {
+            if (Firstboot)
+            {
+                *(GameStates*)(baseAddress + 0x002FBB54) = GameState;
+                GameState = GameState_DevMenu;
+                DevMenu_Address = MultiManiaStartupMenu;
+            }
+            --boot2;
+        }
+        else if (boot2 > 0)
+            --boot2;
 
         if (PlayerControllers[0].Down.Down && PlayerControllers[0].Up.Press && (GameState & GameState_DevMenu) != GameState_DevMenu)
             OpenMenu();
@@ -394,6 +408,17 @@ extern "C"
         printf("[MultiMania-Mod] Loading MultiMania Logo... ");
         Init();
         printf("Done.\n");
+        
+        std::ifstream f("read.txt");
+        if (f.good())
+            Firstboot = false;
+        else
+        {
+            FILE* handle;
+            fopen_s(&handle, "read.txt", "w");
+            fclose(handle);
+        }
+
         SetCurrentDirectoryA(buffer);
         LoadExports();
         WriteData<7>((void*)(baseAddress + 0x1C3064), 0x90);
@@ -405,7 +430,6 @@ extern "C"
 
         WriteData<7>((void*)(baseAddress + 0x001C2AD7), 0x90);
         WriteCall((void*)(baseAddress + 0x001C2AD7), MultiMania_Mod_SyncAndRestart);
-
         
         SoundFXTrampo = new Trampoline((baseAddress + 0x001BC390), (baseAddress + 0x001BC396), MultiMania_Mod_PlaySoundFX_r);
     }

@@ -140,8 +140,7 @@ char MultiManiaStartupMenu()
     {
         SonicMania::DevMenu_DrawText(centerX - 150, "5/5", YPosition, SonicMania::Alignment_Left, 0xF0F0F0);
         SonicMania::DevMenu_DrawText(centerX, "Ready!", YPosition, SonicMania::Alignment_Centre, 0xF0F0F0);
-        YPosition += 6;
-
+        
         YPosition += 12;
         YPosition += 12;
         SonicMania::DevMenu_DrawText(centerX, "You are now ready to start playing", YPosition += 12, SonicMania::Alignment_Centre, 0xF0F0F0);
@@ -152,7 +151,7 @@ char MultiManiaStartupMenu()
         SonicMania::DevMenu_DrawText(centerX, "If you are running into any issues then", YPosition += 12, SonicMania::Alignment_Centre, 0xF0F0F0);
         SonicMania::DevMenu_DrawText(centerX, " please check out the MultiMania Manual", YPosition += 12, SonicMania::Alignment_Centre, 0xF0F0F0);
         SonicMania::DevMenu_DrawText(centerX, " included for detailed Instructions", YPosition += 12, SonicMania::Alignment_Centre, 0xF0F0F0);
-        YPosition += 6;
+        YPosition += 12;
         SonicMania::DevMenu_DrawText(centerX, "Press A to continue.", YPosition += 12, SonicMania::Alignment_Centre, 0xF0F0F0);
 
 
@@ -162,7 +161,7 @@ char MultiManiaStartupMenu()
         if (Page >= 4)
         {
             Page = 0;
-            //SonicMania::GameState = *(SonicMania::GameStates*)(baseAddress + 0x002FBB54);
+            SonicMania::GameState = *(SonicMania::GameStates*)(baseAddress + 0x002FBB54);
         }
         else
             ++Page;

@@ -18,6 +18,7 @@ namespace MultiMania
         public byte[] PacketData = null;
         public bool Connected = false;
         public bool Hosting = false;
+        public bool CheckTiming = true;
         public int UpBytesTotal = 0;
         public int DownBytesTotal = 0;
         public int UpPacketsTotal = 0;
@@ -71,6 +72,7 @@ namespace MultiMania
                 UDPSocket = new UdpClient(new IPEndPoint(IPAddress.Any, 1460));
                 //UDPSocket.Connect(ip);
                 lastIP = ip;
+                LastPacketTime = DateTime.Now;
                 UDPSocket.Send(new byte[] { 0x01 }, 1, ip); // Checks if the server wants to connect
                 UpPacketsTotal++;
                 UpBytesTotal++;
@@ -78,7 +80,7 @@ namespace MultiMania
                 IPEndPoint sender = null;
                 while (UDPSocket.Available == 0)
                 {
-                    if ((DateTime.Now - LastPacketTime).Seconds > 5)
+                    if ((DateTime.Now - LastPacketTime).Seconds > 5 && CheckTiming)
                     {
                         CloseConnection();
                         OnTimeout();
@@ -87,6 +89,7 @@ namespace MultiMania
                     Thread.Sleep(100);
                 }
                 var data = UDPSocket.Receive(ref sender);
+                LastPacketTime = DateTime.Now;
                 lastIP = sender;
                 DownBytesTotal += data.Length;
                 DownPacketsTotal++;
@@ -236,7 +239,7 @@ namespace MultiMania
                         CloseConnection();
                         return;
                     }
-                    if ((DateTime.Now - LastPacketTime).Seconds > 5)
+                    if ((DateTime.Now - LastPacketTime).Seconds > 5 && CheckTiming)
                     {
                         CloseConnection();
                         OnTimeout();

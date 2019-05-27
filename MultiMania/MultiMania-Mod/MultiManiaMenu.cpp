@@ -513,26 +513,10 @@ char MultiManiaMenu_ChangeChar()
     int centerY = *(_DWORD *)(dword_D3CC00 + 614420);
     int YPosition = centerY - 84;
 
-    //DevMenu_DrawRect(0, 0, centerX * 2, centerY * 2, 0x000000, 255, 0, 1);
-    // Title
-    DevMenu_DrawRect(centerX - 128, centerY - 84, 256, 48, 0x00000080, 255, 0, 1);
+   // Title
     YPosition += 6;
-    DevMenu_DrawText(centerX, "MultiMania Main Menu", YPosition, Alignment_Centre, 0xF0F0F0);
     YPosition += 14;
-    DevMenu_DrawText(centerX, (std::string("Version ") + MMVER).c_str(), YPosition, Alignment_Centre, 0xF0F0F0);
-    NetworkInfo info;
-    if (MultiMania_GetNetworkInfo(&info))
-    {
-        char buff[128];
-        memset(buff, 0, 128);
-        sprintf_s(buff, 128, "U:%d D:%d S:%d R:%d L:%d", info.UpBytesTotal, info.DownBytesTotal, info.UpPacketsTotal, info.DownPacketsTotal, info.LostPacketsTotal);
 
-        DevMenu_DrawText(centerX, buff, YPosition, Alignment_Centre, 0xF0F0F0);
-    }
-    else
-    {
-        DevMenu_DrawText(centerX, "Not Connected", YPosition, Alignment_Centre, 0xF0F0F0);
-    }
     YPosition += 40;
 
     // Bottom Panel
@@ -558,6 +542,19 @@ char MultiManiaMenu_ChangeChar()
             break;
         DevMenu_DrawText(centerX, CharOptions[i], YPosition, Alignment_Centre, optionColours[i - DevMenu_Scroll]);
     }
+
+    YPosition += 10;
+    DevMenu_DrawRect(centerX - 128, YPosition, 256, 48, 0x00000080, 255, 0, 1);
+    YPosition += 6;
+    DevMenu_DrawText(centerX, (std::string("MultiMania ") + MMVER).c_str(), YPosition, Alignment_Centre, 0xF0F0F0);
+    YPosition += 14;
+    char buff[128];
+    memset(buff, 0, 128);
+    NetworkInfo info;
+    MultiMania_GetNetworkInfo(&info);
+    sprintf_s(buff, 128, "U:%d D:%d S:%d R:%d L:%d", info.UpBytesTotal, info.DownBytesTotal, info.UpPacketsTotal, info.DownPacketsTotal, info.LostPacketsTotal);
+
+    DevMenu_DrawText(centerX, buff, YPosition, Alignment_Centre, 0xF0F0F0);
 
     if (Key_Up)
     {
