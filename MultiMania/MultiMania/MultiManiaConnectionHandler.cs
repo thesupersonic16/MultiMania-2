@@ -197,12 +197,14 @@ namespace MultiMania
 
         public static string GetServerAddress()
         {
-            var wc = new WebClient();
+            // Replaced due to CodenameGamma wanting to shutdown his website
+            /*var wc = new WebClient();
             string address = Encoding.ASCII.GetString(
                 wc.DownloadData("http://multimania.codenamegamma.com/address.txt")
                 );
             wc.Dispose();
-            return address;
+            return address;*/
+            return "54.39.97.153";
         }
 
 
