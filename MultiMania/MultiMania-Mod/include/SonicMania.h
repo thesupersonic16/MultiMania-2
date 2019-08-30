@@ -380,7 +380,10 @@ namespace SonicMania
         // Angel Island Zone 
         ObjectType_MonkeyDude       = 0x00AC6784,
         ObjectType_Rhinobot         = 0x00AC6C24,
-        ObjectType_Bloominator      = 0x00AC6F48
+        ObjectType_Bloominator      = 0x00AC6F48,
+
+        // Common
+        ObjectType_Player           = 0x00A53D6C
     };
 
     enum TransparencyFlag : BYTE
@@ -433,6 +436,7 @@ namespace SonicMania
     #define PlayerStatus_JumpingIn              (SonicMania::PlayerStatus)(baseAddress + 0x004CD560) // TODO: needs updating
     #define PlayerStatus_SpringBasic            (SonicMania::PlayerStatus)(baseAddress + 0x000CB6C0)
     #define PlayerStatus_ScoreCard              (SonicMania::PlayerStatus)(baseAddress + 0x000CCD30)
+    #define PlayerStatus_TransportTube_CPZ      (SonicMania::PlayerStatus)(baseAddress + 0x000CBA90)
     
     // Sonic
     #define PlayerStatus_Sonic_DropDash         (SonicMania::PlayerStatus)(baseAddress + 0x004CC1F0) // TODO: needs updating
@@ -768,8 +772,8 @@ namespace SonicMania
     {
         #pragma region Data
         /* 0x00000000 */ Vector2 Position;
-        /* 0x00000008 */ DWORD dword8;
-        /* 0x0000000C */ DWORD dwordC;
+        /* 0x00000008 */ DWORD SpriteSizeX;
+        /* 0x0000000C */ DWORD SpriteSizeY;
         /* 0x00000010 */ int XSpeed;
         /* 0x00000014 */ int YSpeed;
         /* 0x00000018 */ DWORD field_18;
@@ -792,7 +796,7 @@ namespace SonicMania
         /* 0x0000004F */ BYTE DrawGroup;                // The layer the Sprite Draws on (0-14)
         /* 0x00000050 */ BYTE gap4F[2];
         /* 0x00000052 */ BYTE byte52;
-        /* 0x00000053 */ char field_53;
+        /* 0x00000053 */ BYTE SizeState;
         /* 0x00000054 */ TransparencyFlag Transparency;
         /* 0x00000055 */ char field_55[3];
         /* 0x00000058 */ PlayerStatus Status;
@@ -842,7 +846,10 @@ namespace SonicMania
         /* 0x000000B2 */ short SpriteIndexTails;
         /* 0x000000B4 */ WORD wordB4;
         /* 0x000000B6 */ unsigned short PlayerID;
-        /* 0x000000B8 */ char field_B8[8];
+        /* 0x000000B8 */ short HitBoxLeft; // TODO: Check if its a pointer to a Hitbox or the Hitbox Struct itself
+        /* 0x000000BA */ short HitBoxRight;
+        /* 0x000000BC */ short HitBoxTop;
+        /* 0x000000BE */ short HitBoxBottom;
         /* 0x000000C0 */ Character Character;
         /* 0x000000C4 */ int RingCount;
         /* 0x000000C8 */ int RingsToNextLife;
@@ -865,15 +872,31 @@ namespace SonicMania
         /* 0x0000010C */ DWORD field_10C;
         /* 0x00000110 */ DWORD field_110;
         /* 0x00000114 */ DWORD field_114;
-        /* 0x00000118 */ DWORD field_118;
+        /* 0x00000118 */ DWORD IsUpSideDown; // Bool?
         /* 0x0000011C */ DWORD field_11C;
         /* 0x00000120 */ DWORD field_120;
         /* 0x00000124 */ SuperState SuperState;
-        /* 0x00000128 */ char field_128[12];
-        /* 0x00000134 */ DWORD dword134;
+        /* 0x00000128 */ DWORD field_128;
+        /* 0x0000012C */ DWORD GroundSpeed2;
+        /* 0x00000130 */ DWORD field_130;
+        /* 0x00000134 */ DWORD InteractStatus; // TODO: Work out all the Statuses
         /* 0x00000138 */ BYTE gap138[4];
         /* 0x0000013C */ DWORD dword13C;
-        /* 0x00000140 */ BYTE gap140[60];
+        /* 0x00000140 */ DWORD dword140;
+        /* 0x00000144 */ DWORD dword144;
+        /* 0x00000148 */ DWORD dword148;
+        /* 0x0000014C */ int physicsAcceleration;
+        /* 0x00000150 */ int physicsDeacceleration;
+        /* 0x00000154 */ int physicsAirAcceleration;
+        /* 0x00000158 */ int physicsAirDeacceleration;
+        /* 0x0000015C */ int physicsUnknown15C;
+        /* 0x00000160 */ int physicsUnknown160; // AirDeacceleration?
+        /* 0x00000164 */ int physicsUnknown164;
+        /* 0x00000168 */ int physicsJumpGravity;
+        /* 0x0000016C */ int physicsUnknown16C;
+        /* 0x00000170 */ int physicsJumpSpeed;
+        /* 0x00000174 */ DWORD dword174;
+        /* 0x00000178 */ DWORD dword178;
         /* 0x0000017C */ DWORD dword17C;
         /* 0x00000180 */ DWORD dword180;
         /* 0x00000184 */ DWORD dword184;
@@ -914,6 +937,7 @@ namespace SonicMania
         /* 0x00000214 */ DWORD dword214;
         /* 0x00000218 */ DWORD dword218;
         /* 0x0000021C */ DWORD dword21C;
+
         void Kill()
         {
             KillFlag = 1;
